@@ -1,0 +1,8 @@
+go 1.23.1
+
+use (
+	./bot
+	./global_models
+	./pkg
+	./server
+)
