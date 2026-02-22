@@ -1,11 +1,12 @@
 module pkg
 
-go 1.23.1
+go 1.25.0
 
 require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/jackc/pgx/v4 v4.18.3
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

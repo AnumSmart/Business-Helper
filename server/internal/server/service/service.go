@@ -16,7 +16,7 @@ type BizService struct {
 }
 
 // Конструктор возвращает интерфейс
-func NewAuthService(repo *repository.BizRepository) (BizServiceInterface, error) {
+func NewBizService(repo *repository.BizRepository) (BizServiceInterface, error) {
 	// проверяем, что на входе интерфейс не nil
 	if repo == nil {
 		return nil, fmt.Errorf("repo must not be nil")

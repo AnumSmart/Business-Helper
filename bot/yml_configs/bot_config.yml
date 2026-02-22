@@ -1,0 +1,5 @@
+bot_token: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'
+webhook_url: 'https://example.com/webhook'
+webhook_port: '8080'
+grpc_server: 'localhost:50051'
+environment: 'development'
