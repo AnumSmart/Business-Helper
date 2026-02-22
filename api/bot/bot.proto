@@ -1,0 +1,142 @@
+// Указывает версию Protocol Buffers. syntax = "proto3" означает использование
+syntax = "proto3";
+
+// Определяет пространство имен пакета для protobuf. Это имя будет использоваться
+// в сгенерированном коде как префикс для всех сообщений и сервисов.
+// Позволяет избежать конфликтов имен между разными .proto файлами
+package bot;
+
+// Указывает Go package path для сгенерированного кода.
+// Все сгенерированные .pb.go файлы будут иметь package bot, но физически
+// расположены в директории bizhelper_v_1_20/global_models/grpc/bot
+// Это позволяет импортировать пакет в Go как: import "bizhelper_v_1_20/global_models/grpc/bot"
+option go_package = "bizhelper_v_1_20/global_models/grpc/bot";
+
+// Определение gRPC сервиса. Это контракт между клиентом и сервером.
+// Сервис BotService предоставляет два метода для взаимодействия с ботом
+service BotService {
+  // ProcessUpdate - обрабатывает обновления от Telegram (новые сообщения, колбэки)
+  // Принимает UpdateRequest и возвращает UpdateResponse
+  rpc ProcessUpdate (UpdateRequest) returns (UpdateResponse);
+
+  // SendMessage - отправляет сообщение от бота пользователю
+  // Принимает SendMessageRequest и возвращает SendMessageResponse
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+}
+
+// Запрос на обработку обновления от Telegram
+message UpdateRequest {
+  // Числа 1,2,3 - это теги полей, используемые для бинарной сериализации.
+  // Они должны быть уникальными в рамках сообщения и не меняться между версиями
+  int64 update_id = 1;              // Уникальный ID обновления от Telegram API.
+  Message message = 2;              // Сообщение от пользователя (опционально, может отсутствовать)
+  CallbackQuery callback_query = 3; // Callback запрос от inline клавиатуры (опционально)
+}
+
+// Представляет сообщение от пользователя в Telegram
+message Message {
+  int64 message_id = 1;   // Уникальный ID сообщения в чате
+  int64 chat_id = 2;      // ID чата (может быть личным, групповым и т.д.)
+  int64 user_id = 3;      // ID пользователя, отправившего сообщение
+  string text = 4;        // Текст сообщения
+  int64 date = 5;         // Unix timestamp отправки сообщения
+  User from = 6;          // Информация об отправителе
+  Chat chat = 7;          // Информация о чате
+}
+
+// Представляет callback запрос от inline клавиатуры
+// Когда пользователь нажимает кнопку с callback_data, приходит такой запрос
+message CallbackQuery {
+  string id = 1;          // Уникальный ID callback запроса
+  int64 user_id = 2;      // ID пользователя, нажавшего кнопку
+  int64 message_id = 3;   // ID сообщения с клавиатурой
+  int64 chat_id = 4;      // ID чата, где находится сообщение
+  string data = 5;        // Данные, связанные с кнопкой (callback_data)
+}
+
+// Информация о пользователе Telegram
+message User {
+  int64 id = 1;                  // Уникальный ID пользователя
+  string first_name = 2;          // Имя пользователя
+  string last_name = 3;           // Фамилия (опционально)
+  string username = 4;            // Username (опционально, без @)
+}
+
+// Информация о чате Telegram
+message Chat {
+  int64 id = 1;          // Уникальный ID чата
+  string type = 2;       // Тип чата: "private", "group", "supergroup", "channel"
+  string title = 3;      // Название чата (для групп и каналов)
+}
+
+
+// Ответ на обработку обновления
+message UpdateResponse {
+  bool success = 1;                       // Успешно ли обработано обновление
+  string error = 2;                       // Текст ошибки (если success = false)
+  repeated OutgoingMessage messages = 3;  // Сообщения для отправки (repeated = массив/слайс)
+}
+
+
+// Исходящее сообщение от бота
+message OutgoingMessage {
+  int64 chat_id = 1;             // ID чата для отправки
+  string text = 2;               // Текст сообщения
+  ReplyMarkup reply_markup = 3;  // Клавиатура (опционально)
+}
+
+// Разметка ответа (клавиатура). Использует oneof для указания одного из типов
+message ReplyMarkup {
+  // oneof означает, что может быть только одно из полей
+  oneof type {
+    InlineKeyboardMarkup inline_keyboard = 1;   // Inline клавиатура (под сообщением)
+    ReplyKeyboardMarkup reply_keyboard = 2;     // Обычная клавиатура (вместо поля ввода)
+  }
+}
+
+// Inline клавиатура (кнопки под сообщением)
+message InlineKeyboardMarkup {
+  repeated InlineKeyboardRow rows = 1;  // Массив рядов кнопок
+}
+
+// Ряд кнопок в inline клавиатуре
+message InlineKeyboardRow {
+  repeated InlineKeyboardButton buttons = 1;  // Кнопки в ряду
+}
+
+// Кнопка inline клавиатуры
+message InlineKeyboardButton {
+  string text = 1;          // Текст на кнопке
+  string callback_data = 2;  // Данные, которые придут в callback_query при нажатии
+  string url = 3;           // URL для открытия (если указан, callback_data игнорируется)
+}
+
+// Обычная клавиатура (заменяет поле ввода)
+message ReplyKeyboardMarkup {
+  repeated ReplyKeyboardRow rows = 1;  // Ряды кнопок
+  bool resize_keyboard = 2;            // Автоматически подгонять размер клавиатуры
+  bool one_time_keyboard = 3;          // Скрыть клавиатуру после использования
+}
+
+// Ряд кнопок в обычной клавиатуре
+message ReplyKeyboardRow {
+  repeated ReplyKeyboardButton buttons = 1;  // Кнопки в ряду
+}
+
+// Кнопка обычной клавиатуры
+message ReplyKeyboardButton {
+  string text = 1;  // Текст на кнопке (отправится как сообщение при нажатии)
+}
+
+// Запрос на отправку сообщения от бота
+message SendMessageRequest {
+  int64 chat_id = 1;          // ID чата для отправки
+  string text = 2;            // Текст сообщения
+  ReplyMarkup reply_markup = 3;  // Клавиатура (опционально)
+}
+
+// Ответ на запрос отправки сообщения
+message SendMessageResponse {
+  bool success = 1;  // Успешно ли отправлено сообщение
+  string error = 2;   // Текст ошибки (если success = false)
+}
