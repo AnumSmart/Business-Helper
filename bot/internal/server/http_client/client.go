@@ -1,5 +1,5 @@
 // Пакет telegram предоставляет клиент для взаимодействия с Telegram Bot API
-package telegram
+package httpclient
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 // Инкапсулирует все необходимое для взаимодействия с Telegram
 type BotHTTPClient struct {
 	token   string       // Токен бота (получается от @BotFather)
-	http    *http.Client // HTTP клиент с настроенными таймаутами
+	Http    *http.Client // HTTP клиент с настроенными таймаутами
 	baseURL string       // Базовый URL для API запросов
 }
 
@@ -25,7 +25,7 @@ type BotHTTPClient struct {
 func NewClient(token string) *BotHTTPClient {
 	return &BotHTTPClient{
 		token:   token,
-		http:    &http.Client{Timeout: 10 * time.Second},              // Важно: таймаут защищает от зависания запросов
+		Http:    &http.Client{Timeout: 10 * time.Second},              // Важно: таймаут защищает от зависания запросов
 		baseURL: fmt.Sprintf("https://api.telegram.org/bot%s", token), // Формируем базовый URL согласно документации Telegram
 	}
 }
@@ -50,7 +50,7 @@ func (c *BotHTTPClient) SetWebhook(url string) error {
 	}
 
 	// Отправляем POST запрос к Telegram API
-	resp, err := c.http.Post(webhookURL, "application/json", bytes.NewBuffer(jsonBody))
+	resp, err := c.Http.Post(webhookURL, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (c *BotHTTPClient) SendMessage(chatID int64, text string, replyMarkup inter
 	}
 
 	// Отпрявляем запрос
-	resp, err := c.http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
+	resp, err := c.Http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return err
 	}
