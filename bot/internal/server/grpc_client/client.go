@@ -1,7 +1,8 @@
-package grpcclient
+package grpc_client
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,26 +22,19 @@ type BotGrpcClient struct {
 // NewBotGrpcClient создает новый gRPC клиент и устанавливает соединение с сервером
 // serverAddr - адрес сервера в формате "host:port" (например "localhost:50051")
 func NewBotGrpcClient(serverAddr string) (*BotGrpcClient, error) {
-	// grpc.Dial устанавливает соединение с gRPC сервером
-	conn, err := grpc.Dial(
+	// Создаем клиент
+	conn, err := grpc.NewClient(
 		serverAddr,
-
-		// grpc.WithTransportCredentials задает способ аутентификации транспорта
-		// insecure.NewCredentials() - отключает TLS/SSL (ТОЛЬКО ДЛЯ РАЗРАБОТКИ!)
-		// В продакшене нужно использовать: credentials.NewClientTLSFromFile(...)-----------------------------------------
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-
-		// grpc.WithBlock делает Dial блокирующим - ждем пока соединение установится
-		// Без этого опции Dial вернется сразу, даже если сервер недоступен
-		grpc.WithBlock(),
 	)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
 	}
 
-	// Создаем клиент для нашего сервиса BotService
-	// Это код, сгенерированный protoc из .proto файла
+	// Инициируем соединение
+	conn.Connect()
+
+	// Проверяем состояние сразу
 	client := pb.NewBotServiceClient(conn)
 
 	return &BotGrpcClient{

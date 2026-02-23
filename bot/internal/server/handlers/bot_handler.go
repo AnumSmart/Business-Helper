@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	grpcclient "bot/internal/grpc_client"
-	"bot/internal/telegram"
+	grpcclient "bot/internal/server/grpc_client"
+	httpclient "bot/internal/server/http_client"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,19 +10,19 @@ import (
 	pb "global_models/grpc/bot"
 )
 
-// WebhookHandler обрабатывает входящие вебхуки от Telegram
+// BotHandler обрабатывает входящие вебхуки от Telegram
 // Содержит все необходимые клиенты для обработки запроса
-type WebhookHandler struct {
-	grpcClient *grpcclient.BotGrpcClient // Для отправки данных в gRPC сервер
-	tgClient   *telegram.BotHTTPClient   // Для отправки ответов в Telegram
+type BotHandler struct {
+	GrpcClient *grpcclient.BotGrpcClient // Для отправки данных в gRPC сервер
+	TgClient   *httpclient.BotHTTPClient // Для отправки ответов в Telegram
 }
 
-// NewWebhookHandler создает новый экземпляр обработчика с внедренными зависимостями
+// NewBotHandler создает новый экземпляр обработчика с внедренными зависимостями
 // Паттерн "Dependency Injection" - клиенты передаются извне
-func NewWebhookHandler(grpcClient *grpcclient.BotGrpcClient, tgClient *telegram.BotHTTPClient) *WebhookHandler {
-	return &WebhookHandler{
-		grpcClient: grpcClient,
-		tgClient:   tgClient,
+func NewBotHandler(grpcClient *grpcclient.BotGrpcClient, tgClient *httpclient.BotHTTPClient) *BotHandler {
+	return &BotHandler{
+		GrpcClient: grpcClient,
+		TgClient:   tgClient,
 	}
 }
 
@@ -63,7 +63,7 @@ type TelegramUpdate struct {
 
 // HandleWebhook - основной метод обработки входящих вебхуков от Telegram
 // Принимает gin.Context для доступа к запросу и ответу
-func (h *WebhookHandler) HandleWebhook(c *gin.Context) {
+func (h *BotHandler) HandleWebhook(c *gin.Context) {
 	var update TelegramUpdate
 
 	// ShouldBindJSON автоматически парсит JSON из тела запроса в структуру
@@ -79,7 +79,7 @@ func (h *WebhookHandler) HandleWebhook(c *gin.Context) {
 
 	// Шаг 2: Отправляем на gRPC сервер для бизнес-логики
 	// c.Request.Context() передает контекст HTTP запроса в gRPC вызов
-	resp, err := h.grpcClient.ProcessUpdate(c.Request.Context(), grpcUpdate)
+	resp, err := h.GrpcClient.ProcessUpdate(c.Request.Context(), grpcUpdate)
 	if err != nil {
 		// Ошибка связи с gRPC сервером
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -88,7 +88,7 @@ func (h *WebhookHandler) HandleWebhook(c *gin.Context) {
 
 	// Шаг 3: Если сервер вернул сообщения для отправки - отправляем их в Telegram
 	if resp.Success && len(resp.Messages) > 0 {
-		if err := h.tgClient.SendOutgoingMessages(resp.Messages); err != nil {
+		if err := h.TgClient.SendOutgoingMessages(resp.Messages); err != nil {
 			// Важно: даже если не удалось отправить ответ, мы не возвращаем ошибку Telegram
 			// Иначе Telegram будет повторно отправлять тот же update
 			c.JSON(http.StatusOK, gin.H{"status": "processed but failed to send response"})

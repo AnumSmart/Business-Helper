@@ -21,10 +21,10 @@ type BotConfig struct {
 }
 
 const (
-	envPath = "c:\\Users\\aliaksei.makarevich\\go\\bizhelper_v_1_20\\bot\\.env"
+	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\bot\\.env"
 )
 
-func LoadConfig() (config *BotConfig, err error) {
+func LoadBotConfig() (config *BotConfig, err error) {
 	err = godotenv.Load(envPath)
 	if err != nil {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
