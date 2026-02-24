@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"server/internal/server/service"
+	"server/internal/biz_server/service"
 
 	"github.com/gin-gonic/gin"
 )

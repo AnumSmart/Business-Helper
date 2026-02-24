@@ -1,4 +1,4 @@
-package server
+package httpserver
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"pkg/configs"
 	"pkg/middleware"
-	"server/internal/server/handlers"
+	"server/internal/biz_server/httpserver/handlers"
 
 	"github.com/gin-gonic/gin"
 )
