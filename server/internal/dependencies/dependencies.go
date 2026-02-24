@@ -10,9 +10,9 @@ import (
 	"runtime"
 
 	"server/configs"
-	"server/internal/server/handlers"
-	"server/internal/server/repository"
-	"server/internal/server/service"
+	"server/internal/biz_server/httpserver/handlers"
+	"server/internal/biz_server/repository"
+	"server/internal/biz_server/service"
 	"sync"
 )
 

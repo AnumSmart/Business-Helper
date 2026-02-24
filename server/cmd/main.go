@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"server/internal/biz_server/httpserver"
 	"server/internal/dependencies"
-	"server/internal/server"
 	"syscall"
 	"time"
 )
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// Создаем HTTP-сервер
-	server, err := server.NewBizServer(ctx, deps.BizConfig.ServerConf, deps.BizHandler)
+	server, err := httpserver.NewBizServer(ctx, deps.BizConfig.ServerConf, deps.BizHandler)
 	if err != nil {
 		panic("Failed to create server!")
 	}

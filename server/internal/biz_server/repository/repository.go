@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"server/internal/domain"
 	"server/internal/interfaces"
 )
 
@@ -29,4 +30,14 @@ func NewBizRepository(dbRepo interfaces.DBRepoInterface, cacheRepo interfaces.Ca
 // метод для теста
 func (r *BizRepository) Echo() string {
 	return fmt.Sprintln("Hello from repo layer!")
+}
+
+func (r *BizRepository) Save(message *domain.Message) error {
+	// заглушка
+	return nil
+}
+
+func (r *BizRepository) SaveCallback(callBack *domain.CallbackLog) error {
+	// заглушка
+	return nil
 }
