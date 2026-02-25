@@ -28,13 +28,13 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 	case req.Message != nil:
 		// Передаем сообщение на обработку в бизнес-логику
 		// Как оператор говорит: "Это вопрос про товары, передаю специалисту по товарам"
-		return s.messageService.ProcessMessage(ctx, req.Message)
+		return s.Handler.ProcessMessage(ctx, req.Message)
 
 		// Если в запросе есть нажатие на кнопку (callback query)
 	case req.CallbackQuery != nil:
 		// Передаем нажатие кнопки на обработку в бизнес-логику
 		// Как оператор говорит: "Клиент нажал кнопку 'Узнать цену', передаю специалисту по ценам"
-		return s.messageService.ProcessCallback(ctx, req.CallbackQuery)
+		return s.Handler.ProcessCallback(ctx, req.CallbackQuery)
 		// Если пришло что-то непонятное (ни сообщение, ни нажатие кнопки)
 	default:
 		// Возвращаем ошибку - как оператор говорит: "Извините, я не понимаю, что вы хотите"
@@ -54,5 +54,6 @@ func (s *GRPCServer) SendMessage(ctx context.Context, req *pb.SendMessageRequest
 
 	// Передаем запрос в бизнес-логику для отправки сообщения
 	// Там решат, какое именно сообщение отправить и с какими кнопками
-	return s.messageService.SendMessage(ctx, req)
+	//return s.Handler.SendMessage(ctx, req)
+	return nil, nil
 }

@@ -9,23 +9,23 @@ import (
 )
 
 // описание интерфейса слоя хэндлеров
-type BizHandlerInterface interface {
+type BizHTTPHandlerInterface interface {
 	EchoAuthServer(c *gin.Context) // ЭХО для тестирования!
 }
 
-// структура хэндлера сервера авторизации
-type BizHandler struct {
-	service service.BizServiceInterface
+// структура хэндлера http сервера основной логики
+type BizHTTPHandler struct {
+	Service service.BizServiceInterface
 }
 
 // конструктор для слоя хэндлеров
-func NewBizHandler(service service.BizServiceInterface) BizHandlerInterface {
-	return &BizHandler{
-		service: service,
+func NewBizHandler(service service.BizServiceInterface) BizHTTPHandlerInterface {
+	return &BizHTTPHandler{
+		Service: service,
 	}
 }
 
 // тестовый метод слоя хэндлеров
-func (h *BizHandler) EchoAuthServer(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Handler layer: %s", h.service.GetEcho())})
+func (h *BizHTTPHandler) EchoAuthServer(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Handler layer: %s", h.Service.GetEcho())})
 }

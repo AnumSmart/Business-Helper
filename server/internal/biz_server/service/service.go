@@ -6,22 +6,26 @@ import (
 	pb "global_models/grpc/bot"
 	"server/internal/biz_server/repository"
 	"server/internal/domain"
-	"time"
 )
 
-// описание интерфейса сервисного слоя
+// описание интерфейса сервисного слоя для HTTP сервера
 type BizServiceInterface interface {
 	GetEcho() string
 }
 
-// MessageServiceInterface - интерфейс для бизнес-логики сообщений
-type MessageServiceInterface interface {
-	// ProcessMessage - обработка входящего сообщения
-	ProcessMessage(ctx context.Context, msg *pb.Message) (*pb.UpdateResponse, error)
+// InMessageServiceInterface - интерфейс для бизнес-логики сообщений (отвечаем, если есть запросы со стороны бота), работа с GRPC
+type InMessageServiceInterface interface {
+	// проверяем и сохраняем сообщение
+	CheckAndSaveMsg(msg *domain.Message) error
+	CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error
+	// генерируем ответ
+	GenerateReply(text string, user *pb.User) string
+	CreateTestKeyboard() *pb.ReplyMarkup
+}
 
-	// ProcessCallback - обработка callback от inline клавиатуры
-	ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error)
-
+// OutMessageServiceInterface - интерфейс для бизнес-логики сообщений (отвечаем, боту в зависимости от бизнесс-логики, без его запроса)
+// возможно, cron операции
+type OutMessageServiceInterface interface {
 	SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error)
 }
 
@@ -31,7 +35,7 @@ type BizService struct {
 }
 
 // Конструктор возвращает интерфейс
-func NewBizService(repo *repository.BizRepository) (BizServiceInterface, error) {
+func NewBizService(repo *repository.BizRepository) (*BizService, error) {
 	// проверяем, что на входе интерфейс не nil
 	if repo == nil {
 		return nil, fmt.Errorf("repo must not be nil")
@@ -47,56 +51,23 @@ func (s *BizService) GetEcho() string {
 	return fmt.Sprintf("%s ---> Service layer", s.repo.Echo())
 }
 
-// ProcessMessage - обработка входящего сообщения
-func (s *BizService) ProcessMessage(ctx context.Context, msg *pb.Message) (*pb.UpdateResponse, error) {
-	// 1. Сохраняем входящее сообщение в БД
-	incomingMsg := &domain.Message{
-		MessageID: msg.MessageId,
-		ChatID:    msg.ChatId,
-		UserID:    msg.UserId,
-		Text:      msg.Text,
-		Direction: "incoming",
-		Timestamp: time.Unix(msg.Date, 0),
+// метод для проверки и сохданения входящего сообщения в базу
+func (s *BizService) CheckAndSaveMsg(msg *domain.Message) error {
+	// возможные проверки.....
+	if msg == nil {
+		return fmt.Errorf("Incoming messgage can not be nil! [error in service layer]")
 	}
 
-	if err := s.repo.Save(incomingMsg); err != nil {
-		return nil, fmt.Errorf("failed to save incoming message: %w", err)
+	// сохраняем входящее сообщение в базу данных
+	if err := s.repo.Save(msg); err != nil {
+		return fmt.Errorf("failed to save outgoing message: %w", err)
 	}
 
-	// 2. Бизнес-логика обработки сообщения
-	replyText := s.generateReply(msg.Text, msg.From)
-
-	// 3. Создаем исходящее сообщение и сохраняем в БД
-	outgoingMsg := &domain.Message{
-		ChatID:    msg.ChatId,
-		UserID:    msg.UserId,
-		Text:      replyText,
-		Direction: "outgoing",
-		Timestamp: time.Now(),
-	}
-
-	if err := s.repo.Save(outgoingMsg); err != nil {
-		return nil, fmt.Errorf("failed to save outgoing message: %w", err)
-	}
-
-	// 4. Формируем ответ для бота
-	response := &pb.UpdateResponse{
-		Success: true,
-		Messages: []*pb.OutgoingMessage{
-			{
-				ChatId: msg.ChatId,
-				Text:   replyText,
-				// Можно добавить клавиатуру если нужно
-				ReplyMarkup: s.createTestKeyboard(),
-			},
-		},
-	}
-
-	return response, nil
+	return nil
 }
 
 // generateReply генерирует ответ на сообщение
-func (s *BizService) generateReply(text string, user *pb.User) string {
+func (s *BizService) GenerateReply(text string, user *pb.User) string {
 	// Простая логика для примера
 	// В реальном проекте здесь может быть AI, бизнес-правила и т.д.
 
@@ -117,7 +88,7 @@ func (s *BizService) generateReply(text string, user *pb.User) string {
 }
 
 // createTestKeyboard создает тестовую inline клавиатуру
-func (s *BizService) createTestKeyboard() *pb.ReplyMarkup {
+func (s *BizService) CreateTestKeyboard() *pb.ReplyMarkup {
 	return &pb.ReplyMarkup{
 		Type: &pb.ReplyMarkup_InlineKeyboard{
 			InlineKeyboard: &pb.InlineKeyboardMarkup{
@@ -148,51 +119,26 @@ func (s *BizService) createTestKeyboard() *pb.ReplyMarkup {
 	}
 }
 
-// ProcessCallback - обработка callback от inline клавиатуры
-func (s *BizService) ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error) {
-	// 1. Логируем callback
-	s.repo.SaveCallback(&domain.CallbackLog{
-		CallbackID: callback.Id,
-		UserID:     callback.UserId,
-		ChatID:     callback.ChatId,
-		MessageID:  callback.MessageId,
-		Data:       callback.Data,
-		Timestamp:  time.Now(),
-	})
-
-	// 2. Анализируем данные callback и формируем ответ
-	response := &pb.UpdateResponse{
-		Success: true,
+// метод для проверки и сохданения callback в базу
+func (s *BizService) CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error {
+	if callBackLog == nil {
+		return fmt.Errorf("callBackLog can not be nil! [error in service layer]")
 	}
 
-	switch callback.Data {
-	case "help":
-		// Отправляем новое сообщение с помощью
-		response.Messages = append(response.Messages, &pb.OutgoingMessage{
-			ChatId: callback.ChatId,
-			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n/start - начало",
-		})
-
-	case "more":
-		// Редактируем существующее сообщение (меняем текст)
-		// Для редактирования нужно добавить поле в protobuf, пока просто шлем новое
-		response.Messages = append(response.Messages, &pb.OutgoingMessage{
-			ChatId: callback.ChatId,
-			Text:   "Дополнительная информация...",
-		})
-
-	default:
-		// Ответ на неизвестную команду
-		response.Messages = append(response.Messages, &pb.OutgoingMessage{
-			ChatId: callback.ChatId,
-			Text:   fmt.Sprintf("Неизвестная команда: %s", callback.Data),
-		})
+	// сохраняем callBack в базу
+	err := s.repo.SaveCallback(callBackLog)
+	if err != nil {
+		return err
 	}
-
-	return response, nil
+	return nil
 }
 
+// метод для оправки сообщения от бота без запроса от пользователя (согласно бизнесс-логике)
 func (s BizService) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
-	// заглушка.........................
-	return nil, nil
+	// log.Printf("Send message to chat %d: %s", req.ChatId, req.Text)
+
+	// Здесь может быть валидация, сохранение в БД, etc.
+	return &pb.SendMessageResponse{
+		Success: true,
+	}, nil
 }
