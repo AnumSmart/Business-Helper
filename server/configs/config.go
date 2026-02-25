@@ -17,7 +17,7 @@ type BizServiceConfig struct {
 
 // путь к .env файлу
 const (
-	envPath = "c:\\Users\\aliaksei.makarevich\\go\\bizhelper v_1_20\\server\\.env"
+	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\server\\.env"
 )
 
 // загружаем конфиг-данные из .env

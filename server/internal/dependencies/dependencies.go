@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"server/configs"
+	handlersgrpc "server/internal/biz_server/grpcserver/handlers_grpc"
 	"server/internal/biz_server/httpserver/handlers"
 	"server/internal/biz_server/repository"
 	"server/internal/biz_server/service"
@@ -18,8 +19,9 @@ import (
 
 // Dependencies содержит все общие зависимости
 type BizServiceDepenencies struct {
-	BizConfig  *configs.BizServiceConfig    // конфиг всего сервера управления ботами
-	BizHandler handlers.BizHandlerInterface // интерфейс хэндлера
+	BizConfig      *configs.BizServiceConfig        // конфиг всего сервера управления ботами
+	BizHTTPHandler handlers.BizHTTPHandlerInterface // интерфейс хэндлера
+	BizGRPCHandler handlersgrpc.GRPCHandlerInterface
 
 	// добавляем поля для логики освобождения ресурсов
 	pgPool         global_db.Pool     // для особождения ресурсов DB
@@ -71,15 +73,22 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		return nil, fmt.Errorf("failed to create Service Layer: %w", err)
 	}
 
-	// создаём слой хэндлера
-	bizHandler := handlers.NewBizHandler(service)
-	if bizHandler == nil {
-		return nil, fmt.Errorf("failed to create bizness handler")
+	// создаём слой хэндлера для HTTP
+	bizHTTPHandler := handlers.NewBizHandler(service)
+	if bizHTTPHandler == nil {
+		return nil, fmt.Errorf("failed to create bizness http handler")
+	}
+
+	// создаём слой хэндлера для GRPC
+	bizGRPCHandler := handlersgrpc.NewBizGRPCHandler(service)
+	if bizGRPCHandler == nil {
+		return nil, fmt.Errorf("failed to create bizness grpc handler")
 	}
 
 	return &BizServiceDepenencies{
-		BizConfig:  conf,
-		BizHandler: bizHandler,
+		BizConfig:      conf,
+		BizHTTPHandler: bizHTTPHandler,
+		BizGRPCHandler: bizGRPCHandler,
 	}, nil
 }
 

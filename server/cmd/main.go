@@ -25,10 +25,12 @@ func main() {
 	}
 
 	// Создаем HTTP-сервер
-	server, err := httpserver.NewBizServer(ctx, deps.BizConfig.ServerConf, deps.BizHandler)
+	httpServer, err := httpserver.NewBizServer(ctx, deps.BizConfig.ServerConf, deps.BizHTTPHandler)
 	if err != nil {
 		panic("Failed to create server!")
 	}
+
+	// Создаём GRPC сервер
 
 	// создаём канал, который бдут реагировать на системные сигналы
 	sigChan := make(chan os.Signal, 1)
@@ -37,7 +39,7 @@ func main() {
 	// Запуск сервера
 	go func() {
 		fmt.Printf("🚀 HTTP сервер авторизации запускается на %s\n", deps.BizConfig.ServerConf.Addr())
-		if err := server.Run(); err != nil && err != http.ErrServerClosed {
+		if err := httpServer.Run(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server failed: %v", err)
 		}
 	}()
@@ -52,7 +54,7 @@ func main() {
 
 	// Останавливаем HTTP сервер (ждем текущие запросы)
 	fmt.Println("Останавливаем HTTP biz сервер...")
-	if err := server.Shutdown(shutdownCtx); err != nil {
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		log.Printf("Error during server shutdown: %v", err)
 	}
 
