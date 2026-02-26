@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "global_models/grpc/bot"
+	"global_models/interf"
 	"server/internal/biz_server/repository"
 	"server/internal/domain"
 )
@@ -31,18 +32,24 @@ type OutMessageServiceInterface interface {
 
 // описание структуры сервисного слоя
 type BizService struct {
-	repo *repository.BizRepository // слой репоизтория (прямая зависимость)
+	repo       *repository.BizRepository // слой репоизтория (прямая зависимость)
+	grpcClient interf.GRPCInterface      // grpc клиент (глобальный интерфейс)
 }
 
 // Конструктор возвращает интерфейс
-func NewBizService(repo *repository.BizRepository) (*BizService, error) {
+func NewBizService(repo *repository.BizRepository, grpcClient interf.GRPCInterface) (*BizService, error) {
 	// проверяем, что на входе интерфейс не nil
 	if repo == nil {
 		return nil, fmt.Errorf("repo must not be nil")
 	}
 
+	if grpcClient == nil {
+		return nil, fmt.Errorf("grpcClient must not be nil")
+	}
+
 	return &BizService{
-		repo: repo,
+		repo:       repo,
+		grpcClient: grpcClient,
 	}, nil
 }
 

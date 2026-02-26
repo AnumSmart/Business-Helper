@@ -52,8 +52,7 @@ func (s *GRPCServer) SendMessage(ctx context.Context, req *pb.SendMessageRequest
 	// ChatId - это как адрес получателя (уникальный ID чата с пользователем)
 	log.Printf("SendMessage request for chat %d", req.ChatId)
 
-	// Передаем запрос в бизнес-логику для отправки сообщения
-	// Там решат, какое именно сообщение отправить и с какими кнопками
-	//return s.Handler.SendMessage(ctx, req)
-	return nil, nil
+	// Передаем запрос в бизнес-логику для обработки принятого сообщения от grpc клиента на стороне бота
+	// проведём проверки и передадим в сервисный слой, чтобы там решить куда дальше посылать ответ (если нужно будет)
+	return s.Handler.ProcessIncomingMsg(ctx, req)
 }

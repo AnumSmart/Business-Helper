@@ -10,9 +10,11 @@ import (
 
 // структрура конфига для всего сервиса работы с ботами
 type BizServiceConfig struct {
-	ServerConf     *configs.ServerConfig
-	PostgresDBConf *configs.PostgresDBConfig
-	RedisConf      *configs.RedisConfig
+	HTTPServerConf   *configs.ServerConfig     // конфиг для HTTP сервера
+	GRPCServerConf   *configs.GRPCServerConfig // конфиг для GRPC сервера
+	GRPCClientConfig *configs.GRPCClientConfig // конфиг для GRPC клиента
+	PostgresDBConf   *configs.PostgresDBConfig // конфиг для базы данных POSTGRES
+	RedisConf        *configs.RedisConfig      // конфиг для кэша REDIS
 }
 
 // путь к .env файлу
@@ -33,6 +35,15 @@ func LoadConfig() (*BizServiceConfig, error) {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}
 
+	// загружаем конфиг для grpc сервера
+	grpcServerConfig, err := configs.LoadYAMLConfig[configs.GRPCServerConfig](os.Getenv("GRPC_SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultGRPCServerConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
+	}
+
+	// загружаем конфиг для grpc клиента
+	grpcClientCofig, err := configs.LoadYAMLConfig[configs.GRPCClientConfig](os.Getenv("GRPC_CLIENT_CONFIG_ADDRESS_STRING"), configs.UseDefaultGRPCClientConfig)
+
 	// загружаем данные из .env файла для postgresDBConfig
 	postgresDBConfig, err := configs.NewPostgresDBConfigFromEnv()
 	if err != nil {
@@ -46,8 +57,10 @@ func LoadConfig() (*BizServiceConfig, error) {
 	}
 
 	return &BizServiceConfig{
-		ServerConf:     serverConfig,
-		PostgresDBConf: postgresDBConfig,
-		RedisConf:      redisConfig,
+		HTTPServerConf:   serverConfig,
+		GRPCServerConf:   grpcServerConfig,
+		GRPCClientConfig: grpcClientCofig,
+		PostgresDBConf:   postgresDBConfig,
+		RedisConf:        redisConfig,
 	}, nil
 }

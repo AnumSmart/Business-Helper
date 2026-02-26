@@ -5,25 +5,18 @@ import (
 	"fmt"
 	"server/internal/biz_server/service"
 	"server/internal/domain"
+	"server/internal/interfaces"
 	"time"
 
 	pb "global_models/grpc/bot"
 )
-
-type GRPCHandlerInterface interface {
-	// ProcessMessage - обработка входящего сообщения
-	ProcessMessage(ctx context.Context, msg *pb.Message) (*pb.UpdateResponse, error)
-
-	// ProcessCallback - обработка callback от inline клавиатуры
-	ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error)
-}
 
 // На этом слое остается только транспортная логика (преобразование данных и управление запросом/ответом)
 type BizGRPCHandler struct {
 	Service service.InMessageServiceInterface
 }
 
-func NewBizGRPCHandler(grpcService service.InMessageServiceInterface) GRPCHandlerInterface {
+func NewBizGRPCHandler(grpcService service.InMessageServiceInterface) interfaces.GRPCHandlerInterface {
 	return &BizGRPCHandler{
 		Service: grpcService,
 	}
@@ -129,4 +122,8 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		})
 	}
 	return response, nil
+}
+
+func (b *BizGRPCHandler) ProcessIncomingMsg(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
+	return nil, nil
 }
