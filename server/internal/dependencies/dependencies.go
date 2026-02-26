@@ -10,10 +10,12 @@ import (
 	"runtime"
 
 	"server/configs"
+	"server/internal/biz_server/grpcclient"
 	handlersgrpc "server/internal/biz_server/grpcserver/handlers_grpc"
 	"server/internal/biz_server/httpserver/handlers"
 	"server/internal/biz_server/repository"
 	"server/internal/biz_server/service"
+	"server/internal/interfaces"
 	"sync"
 )
 
@@ -21,7 +23,7 @@ import (
 type BizServiceDepenencies struct {
 	BizConfig      *configs.BizServiceConfig        // конфиг всего сервера управления ботами
 	BizHTTPHandler handlers.BizHTTPHandlerInterface // интерфейс хэндлера
-	BizGRPCHandler handlersgrpc.GRPCHandlerInterface
+	BizGRPCHandler interfaces.GRPCHandlerInterface  // интерфейс хэндлера для работы по grpc
 
 	// добавляем поля для логики освобождения ресурсов
 	pgPool         global_db.Pool     // для особождения ресурсов DB
@@ -58,7 +60,7 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		return nil, fmt.Errorf("failed to create Black List repository (based om Redis): %w", err)
 	}
 
-	// создаём репозиторий черного списка
+	// создаём репозиторий кэша
 	cache, err := repository.NewBizCacheRepo(redisCacherepo, "server_cache")
 
 	// создаём слой репозитория (на базе репозитория Postgres и кэша (на базе redis))
@@ -67,8 +69,14 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		return nil, fmt.Errorf("failed to create Auth Repository Layer: %w", err)
 	}
 
+	// создаём экземпляр grpc клиента
+	grpcClient, err := grpcclient.NewBotGrpcClient(conf.GRPCClientConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create grpc client: %w", err)
+	}
+
 	// создаём сервисный слой
-	service, err := service.NewBizService(repo)
+	service, err := service.NewBizService(repo, grpcClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Service Layer: %w", err)
 	}

@@ -6,25 +6,27 @@ import (
 	"log"
 	"net"
 	"pkg/configs"
-	handlersgrpc "server/internal/biz_server/grpcserver/handlers_grpc"
+
+	"server/internal/interfaces"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
 	pb "global_models/grpc/bot" // Импортируем сгенерированные protobuf - это как контракт, по которому бот и сервер будут общаться
+	"global_models/interf"
 )
 
 // GRPCServer - gRPC сервер для приема запросов от бота
 type GRPCServer struct {
-	pb.UnimplementedBotServiceServer                                   // Встраиваем для обратной совместимости
-	server                           *grpc.Server                      // Сам сервер, который слушает входящие подключения
-	Handler                          handlersgrpc.GRPCHandlerInterface // Бизнес-логика для сообщений (интерфейс из сервисного слоя)
-	config                           *configs.GRPCServerConfig         // конфиг grpc сервера
+	pb.UnimplementedBotServiceServer                                 // Встраиваем для обратной совместимости
+	server                           *grpc.Server                    // Сам сервер, который слушает входящие подключения
+	Handler                          interfaces.GRPCHandlerInterface // Бизнес-логика для сообщений (интерфейс из сервисного слоя)
+	config                           *configs.GRPCServerConfig       // конфиг grpc сервера
 }
 
-// NewGRPCServer создает новый gRPC сервер (конструктор)
-func NewGRPCServer(handler handlersgrpc.GRPCHandlerInterface, conf *configs.GRPCServerConfig) *GRPCServer {
+// NewGRPCServer создает новый gRPC сервер (конструктор), возвращает глобальный интерфейс
+func NewGRPCServer(handler interfaces.GRPCHandlerInterface, conf *configs.GRPCServerConfig) interf.GRPCInterface {
 	return &GRPCServer{
 		Handler: handler,
 		config:  conf,

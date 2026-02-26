@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"server/internal/biz_server/grpcserver"
 	"server/internal/biz_server/httpserver"
 	"server/internal/dependencies"
 	"syscall"
@@ -25,22 +26,31 @@ func main() {
 	}
 
 	// Создаем HTTP-сервер
-	httpServer, err := httpserver.NewBizServer(ctx, deps.BizConfig.ServerConf, deps.BizHTTPHandler)
+	httpServer, err := httpserver.NewBizServer(ctx, deps.BizConfig.HTTPServerConf, deps.BizHTTPHandler)
 	if err != nil {
 		panic("Failed to create server!")
 	}
 
-	// Создаём GRPC сервер
+	// Создаём GRPC-сервер
+	grpcServer := grpcserver.NewGRPCServer(deps.BizGRPCHandler, deps.BizConfig.GRPCServerConf)
 
 	// создаём канал, который бдут реагировать на системные сигналы
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Запуск сервера
+	// Запуск HTTP сервера
 	go func() {
-		fmt.Printf("🚀 HTTP сервер авторизации запускается на %s\n", deps.BizConfig.ServerConf.Addr())
+		fmt.Printf("🚀 HTTP сервер основной логики запускается на %s\n", deps.BizConfig.HTTPServerConf.Addr())
 		if err := httpServer.Run(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed: %v", err)
+			log.Fatalf("HTTP Server --- failed: %v", err)
+		}
+	}()
+
+	// запуск GRPC сервера
+	go func() {
+		fmt.Printf("🚀 GRPC сервер основной логики запускается на %s\n", deps.BizConfig.GRPCServerConf.Addr())
+		if err := httpServer.Run(); err != nil {
+			log.Fatalf("GRPC Server --- failed: %v", err)
 		}
 	}()
 
@@ -58,12 +68,18 @@ func main() {
 		log.Printf("Error during server shutdown: %v", err)
 	}
 
+	// Останавливаем GRPC сервер (ждем текущие запросы)
+	fmt.Println("Останавливаем GRPC biz сервер...")
+	if err := grpcServer.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Error during server shutdown: %v", err)
+	}
+
 	// Закрываем зависимости при выходе
 	err = deps.Close()
 	if err != nil {
 		log.Printf("Error during resourses closing: %v", err)
 	}
 
-	fmt.Println("👋 Сервер остановлен")
+	fmt.Println("👋 Серверы остановлены")
 
 }
