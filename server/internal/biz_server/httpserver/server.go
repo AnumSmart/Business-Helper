@@ -2,25 +2,25 @@ package httpserver
 
 import (
 	"context"
+	"global_models/interf"
 	"log"
 	"net/http"
 	"pkg/configs"
 	"pkg/middleware"
-	"server/internal/biz_server/httpserver/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
 // структура сервера для управления логикой ботов-ассистентов
 type BizServer struct {
-	httpServer *http.Server                     // базовый сервер из пакета http
-	router     *gin.Engine                      // роутер gin
-	config     *configs.ServerConfig            // базовый конфиг
-	Handler    handlers.BizHTTPHandlerInterface // интерфейс слоя хэндлеров
+	httpServer *http.Server                   // базовый сервер из пакета http
+	router     *gin.Engine                    // роутер gin
+	config     *configs.ServerConfig          // базовый конфиг
+	Handler    interf.BizHTTPHandlerInterface // интерфейс слоя хэндлеров
 }
 
 // Конструктор для сервера
-func NewBizServer(ctx context.Context, config *configs.ServerConfig, handler handlers.BizHTTPHandlerInterface) (*BizServer, error) {
+func NewBizServer(ctx context.Context, config *configs.ServerConfig, handler interf.BizHTTPHandlerInterface) (*BizServer, error) {
 	// создаём экземпляр роутера
 	router := gin.Default()
 	err := router.SetTrustedProxies(nil)
@@ -46,7 +46,7 @@ func NewBizServer(ctx context.Context, config *configs.ServerConfig, handler han
 
 // Метод для маршрутизации сервера
 func (a *BizServer) SetUpRoutes() {
-	a.router.GET("/hello", a.Handler.EchoAuthServer) // тестовый ендпоинт
+	a.router.GET("/echo", a.Handler.EchoServer) // тестовый ендпоинт
 }
 
 // Метод для запуска сервера

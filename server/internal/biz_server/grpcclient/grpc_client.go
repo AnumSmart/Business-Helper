@@ -1,7 +1,6 @@
 package grpcclient
 
 import (
-	"context"
 	"fmt"
 	"pkg/configs"
 
@@ -11,7 +10,6 @@ import (
 	// Импортируем сгенерированный из proto файла пакет
 	// pb - это псевдоним (alias) для удобства использования
 	pb "global_models/grpc/bot"
-	"global_models/interf"
 )
 
 // BotGrpcClient представляет gRPC клиент для сервиса бота
@@ -23,7 +21,7 @@ type BotGrpcClient struct {
 
 // NewBotGrpcClient создает новый gRPC клиент и устанавливает соединение с сервером
 // serverAddr - адрес сервера в формате "host:port" (например "localhost:50052")
-func NewBotGrpcClient(config *configs.GRPCClientConfig) (interf.GRPCInterface, error) {
+func NewBotGrpcClient(config *configs.GRPCClientConfig) (*BotGrpcClient, error) {
 	// Создаем клиент
 	conn, err := grpc.NewClient(
 		config.Addr(),
@@ -47,10 +45,13 @@ func NewBotGrpcClient(config *configs.GRPCClientConfig) (interf.GRPCInterface, e
 
 // Close закрывает gRPC соединение
 // Всегда нужно вызывать при завершении работы приложения
-func (c *BotGrpcClient) Close() error {
+func (c *BotGrpcClient) ShutDown() error {
 	return c.conn.Close()
 }
 
+// Необходимо будет использовать только нужные методы grpc сервера
+
+/*
 // ProcessUpdate отправляет запрос на обработку обновления от Telegram
 func (c *BotGrpcClient) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	// Вызываем сгенерированный метод клиента
@@ -62,9 +63,4 @@ func (c *BotGrpcClient) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest
 func (c *BotGrpcClient) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
 	return c.client.SendMessage(ctx, req)
 }
-
-// метод-пустышка, чтобы удовлетвоярть глобальному интерфейсу
-func (c *BotGrpcClient) Shutdown(ctx context.Context) error {
-	fmt.Println("что-то выключили")
-	return nil
-}
+*/

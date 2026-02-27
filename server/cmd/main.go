@@ -58,7 +58,7 @@ func main() {
 	<-sigChan
 	fmt.Println("\n🛑 Остановка сервера biz...")
 
-	// Graceful shutdown
+	// Graceful shutdown - контекст с отменой, чтобы дать 30 сек на завершение 2х серверов
 	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, 30*time.Second)
 	defer shutdownCancel()
 

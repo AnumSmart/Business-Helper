@@ -3,6 +3,7 @@ package handlersgrpc
 import (
 	"context"
 	"fmt"
+	"server/internal/biz_server/grpcserver/converter"
 	"server/internal/biz_server/service"
 	"server/internal/domain"
 	"server/internal/interfaces"
@@ -13,10 +14,10 @@ import (
 
 // На этом слое остается только транспортная логика (преобразование данных и управление запросом/ответом)
 type BizGRPCHandler struct {
-	Service service.InMessageServiceInterface
+	Service service.ServiceForGRPCHandler
 }
 
-func NewBizGRPCHandler(grpcService service.InMessageServiceInterface) interfaces.GRPCHandlerInterface {
+func NewBizGRPCHandler(grpcService service.ServiceForGRPCHandler) interfaces.GRPCHandlerInterface {
 	return &BizGRPCHandler{
 		Service: grpcService,
 	}
@@ -24,15 +25,8 @@ func NewBizGRPCHandler(grpcService service.InMessageServiceInterface) interfaces
 
 // ProcessMessage - обработка входящего сообщения
 func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*pb.UpdateResponse, error) {
-	// Приводим входящее сообщение к domain типу
-	incomingMsg := &domain.Message{
-		MessageID: msg.MessageId,
-		ChatID:    msg.ChatId,
-		UserID:    msg.UserId,
-		Text:      msg.Text,
-		Direction: "incoming",
-		Timestamp: time.Unix(msg.Date, 0),
-	}
+	// Приводим входящее сообщение к domain типу, используем конвертер
+	incomingMsg := converter.ToDomainMessage(msg)
 
 	// Сохранаяем сообщение в БД через сервисный слой
 	err := b.Service.CheckAndSaveMsg(incomingMsg)
@@ -40,8 +34,11 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 		return nil, fmt.Errorf("failed to save incoming message: %w", err)
 	}
 
+	// конвертируем пользователя из proto сообщения в доменную модель
+	user := converter.ToDomainUser(msg.From)
+
 	// генерируем ответ в сервисном слое
-	replyText := b.Service.GenerateReply(incomingMsg.Text, msg.From)
+	replyText := b.Service.GenerateReply(incomingMsg.Text, user)
 
 	// создаём исходящее сообщение на базе domain типа, чтобы его сохранить
 	outgoingMsg := &domain.Message{
@@ -66,8 +63,6 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 			{
 				ChatId: msg.ChatId,
 				Text:   replyText,
-				// Можно добавить клавиатуру если нужно
-				ReplyMarkup: b.Service.CreateTestKeyboard(),
 			},
 		},
 	}
@@ -77,15 +72,8 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 
 // ProcessCallback - обработка callback от inline клавиатуры
 func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error) {
-	// Приводим входящий callback к domain типу
-	callBackLog := &domain.CallbackLog{
-		CallbackID: callback.Id,
-		UserID:     callback.UserId,
-		ChatID:     callback.ChatId,
-		MessageID:  callback.MessageId,
-		Data:       callback.Data,
-		Timestamp:  time.Now(),
-	}
+	// Приводим входящий callback к domain типуб используем конвертер
+	callBackLog := converter.ToCallbackLog(callback)
 
 	// проверяем и сохраняем данные в БД
 	err := b.Service.CheckAndSaveCallBack(callBackLog)
@@ -103,15 +91,7 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		// Отправляем новое сообщение с помощью
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
-			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n/start - начало",
-		})
-
-	case "more":
-		// Редактируем существующее сообщение (меняем текст)
-		// Для редактирования нужно добавить поле в protobuf, пока просто шлем новое
-		response.Messages = append(response.Messages, &pb.OutgoingMessage{
-			ChatId: callback.ChatId,
-			Text:   "Дополнительная информация...",
+			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n",
 		})
 
 	default:
@@ -124,6 +104,27 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 	return response, nil
 }
 
+// Принятое сообщение от grpc клиента обрабатывается в слое хэндлера и передаётся в слой сервиса
 func (b *BizGRPCHandler) ProcessIncomingMsg(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
-	return nil, nil
+	// 1. Валидация протокола
+	if req == nil {
+		return nil, fmt.Errorf("request is nil!")
+	}
+
+	// 2. Проверка обязательных полей на уровне протокола
+	if req.ChatId == 0 {
+		return nil, fmt.Errorf("Chat ID must not be 0!")
+	}
+
+	// 3. КОНВЕРТАЦИЯ: из protobuf во внутреннюю модель
+	incomingMsg := converter.ToIncomingMessage(req)
+
+	// 4. Вызов сервисного слоя с внутренней моделью
+	result, err := b.Service.AnswerIncomingMsg(ctx, incomingMsg)
+	if err != nil {
+		return nil, err
+	}
+
+	// 5. КОНВЕРТАЦИЯ: из внутренней модели обратно в protobuf
+	return converter.ToProtoResponse(result), nil
 }
