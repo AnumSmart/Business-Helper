@@ -3,41 +3,35 @@ package service
 import (
 	"context"
 	"fmt"
-	pb "global_models/grpc/bot"
-	"global_models/interf"
+	"server/internal/biz_server/grpcclient"
 	"server/internal/biz_server/repository"
 	"server/internal/domain"
 )
 
 // описание интерфейса сервисного слоя для HTTP сервера
-type BizServiceInterface interface {
+type ServiceForHTTPHandler interface {
 	GetEcho() string
 }
 
-// InMessageServiceInterface - интерфейс для бизнес-логики сообщений (отвечаем, если есть запросы со стороны бота), работа с GRPC
-type InMessageServiceInterface interface {
+// ServiceForGRPCHandler - интерфейс для бизнес-логики сообщений (отвечаем, если есть запросы со стороны бота), работа с GRPC
+type ServiceForGRPCHandler interface {
 	// проверяем и сохраняем сообщение
 	CheckAndSaveMsg(msg *domain.Message) error
 	CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error
 	// генерируем ответ
-	GenerateReply(text string, user *pb.User) string
-	CreateTestKeyboard() *pb.ReplyMarkup
-}
-
-// OutMessageServiceInterface - интерфейс для бизнес-логики сообщений (отвечаем, боту в зависимости от бизнесс-логики, без его запроса)
-// возможно, cron операции
-type OutMessageServiceInterface interface {
-	SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error)
+	GenerateReply(text string, user *domain.User) string
+	CreateTestKeyboard() *domain.ReplyMarkup
+	AnswerIncomingMsg(ctx context.Context, req *domain.IncomingMessage) (*domain.MessageResponse, error)
 }
 
 // описание структуры сервисного слоя
 type BizService struct {
 	repo       *repository.BizRepository // слой репоизтория (прямая зависимость)
-	grpcClient interf.GRPCInterface      // grpc клиент (глобальный интерфейс)
+	grpcClient *grpcclient.BotGrpcClient // grpc клиент
 }
 
 // Конструктор возвращает интерфейс
-func NewBizService(repo *repository.BizRepository, grpcClient interf.GRPCInterface) (*BizService, error) {
+func NewBizService(repo *repository.BizRepository, grpcClient *grpcclient.BotGrpcClient) (*BizService, error) {
 	// проверяем, что на входе интерфейс не nil
 	if repo == nil {
 		return nil, fmt.Errorf("repo must not be nil")
@@ -58,7 +52,7 @@ func (s *BizService) GetEcho() string {
 	return fmt.Sprintf("%s ---> Service layer", s.repo.Echo())
 }
 
-// метод для проверки и сохданения входящего сообщения в базу
+// метод для проверки и сохданения входящего сообщения (по GRPC) в базу
 func (s *BizService) CheckAndSaveMsg(msg *domain.Message) error {
 	// возможные проверки.....
 	if msg == nil {
@@ -74,7 +68,7 @@ func (s *BizService) CheckAndSaveMsg(msg *domain.Message) error {
 }
 
 // generateReply генерирует ответ на сообщение
-func (s *BizService) GenerateReply(text string, user *pb.User) string {
+func (s *BizService) GenerateReply(text string, user *domain.User) string {
 	// Простая логика для примера
 	// В реальном проекте здесь может быть AI, бизнес-правила и т.д.
 
@@ -94,35 +88,23 @@ func (s *BizService) GenerateReply(text string, user *pb.User) string {
 	return fmt.Sprintf("Эхо: %s", text)
 }
 
-// createTestKeyboard создает тестовую inline клавиатуру
-func (s *BizService) CreateTestKeyboard() *pb.ReplyMarkup {
-	return &pb.ReplyMarkup{
-		Type: &pb.ReplyMarkup_InlineKeyboard{
-			InlineKeyboard: &pb.InlineKeyboardMarkup{
-				Rows: []*pb.InlineKeyboardRow{
-					{
-						Buttons: []*pb.InlineKeyboardButton{
-							{
-								Text:         "Помощь",
-								CallbackData: "help",
-							},
-						},
-					},
-					{
-						Buttons: []*pb.InlineKeyboardButton{
-							{
-								Text:         "Еще",
-								CallbackData: "more",
-							},
-							{
-								Text: "Сайт",
-								Url:  "https://example.com",
-							},
-						},
-					},
-				},
+// CreateTestReplyKeyboard создает тестовую обычную клавиатуру
+// (альтернативный пример для полноты)
+func (s *BizService) CreateTestKeyboard() *domain.ReplyMarkup {
+	return &domain.ReplyMarkup{
+		Keyboard: [][]domain.Button{
+			// Первый ряд
+			{
+				{Text: "Кнопка 1"},
+				{Text: "Кнопка 2"},
+			},
+			// Второй ряд
+			{
+				{Text: "Отмена"},
 			},
 		},
+		ResizeKeyboard:  true, // Подогнать размер под кнопки
+		OneTimeKeyboard: true, // Спрятать после использования
 	}
 }
 
@@ -140,12 +122,12 @@ func (s *BizService) CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error
 	return nil
 }
 
-// метод для оправки сообщения от бота без запроса от пользователя (согласно бизнесс-логике)
-func (s BizService) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
+// метод для обработки сообщения от grpc клиента и ответа
+func (s *BizService) AnswerIncomingMsg(ctx context.Context, req *domain.IncomingMessage) (*domain.MessageResponse, error) {
 	// log.Printf("Send message to chat %d: %s", req.ChatId, req.Text)
 
 	// Здесь может быть валидация, сохранение в БД, etc.
-	return &pb.SendMessageResponse{
+	return &domain.MessageResponse{
 		Success: true,
 	}, nil
 }

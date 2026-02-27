@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"global_models/global_cache"
 	"global_models/global_db"
+	"global_models/interf"
 	postgresdb "pkg/postgres_db"
 	"pkg/redis"
 	"runtime"
@@ -21,9 +22,10 @@ import (
 
 // Dependencies содержит все общие зависимости
 type BizServiceDepenencies struct {
-	BizConfig      *configs.BizServiceConfig        // конфиг всего сервера управления ботами
-	BizHTTPHandler handlers.BizHTTPHandlerInterface // интерфейс хэндлера
-	BizGRPCHandler interfaces.GRPCHandlerInterface  // интерфейс хэндлера для работы по grpc
+	BizConfig      *configs.BizServiceConfig       // конфиг всего сервера управления ботами
+	BizHTTPHandler interf.BizHTTPHandlerInterface  // интерфейс хэндлера http сервера (глобальный интерфейс)
+	BizGRPCHandler interfaces.GRPCHandlerInterface // интерфейс хэндлера для работы по grpc
+	bizGRPCClient  *grpcclient.BotGrpcClient       // эт поле зобавлено, чтобы останавливать клиент (освобождение ресурсов)
 
 	// добавляем поля для логики освобождения ресурсов
 	pgPool         global_db.Pool     // для особождения ресурсов DB
@@ -97,6 +99,7 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		BizConfig:      conf,
 		BizHTTPHandler: bizHTTPHandler,
 		BizGRPCHandler: bizGRPCHandler,
+		bizGRPCClient:  grpcClient, // Сохраняем для закрытия
 	}, nil
 }
 
@@ -104,6 +107,13 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 func (d *BizServiceDepenencies) Close() error {
 	d.closeOnce.Do(func() {
 		var errs []error
+
+		// Закрываем gRPC клиент (В ПЕРВУЮ ОЧЕРЕДЬ!)
+		if d.bizGRPCClient != nil {
+			if err := d.bizGRPCClient.ShutDown(); err != nil {
+				errs = append(errs, fmt.Errorf("grpc client: %w", err))
+			}
+		}
 
 		// Закрываем Redis
 		if d.redisCacherepo != nil {
