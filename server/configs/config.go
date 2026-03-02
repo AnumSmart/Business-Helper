@@ -10,7 +10,7 @@ import (
 
 // структрура конфига для всего сервиса работы с ботами
 type BizServiceConfig struct {
-	HTTPServerConf   *configs.ServerConfig     // конфиг для HTTP сервера
+	HTTPServerConf   *configs.HttpServerConfig // конфиг для HTTP сервера
 	GRPCServerConf   *configs.GRPCServerConfig // конфиг для GRPC сервера
 	GRPCClientConfig *configs.GRPCClientConfig // конфиг для GRPC клиента
 	PostgresDBConf   *configs.PostgresDBConfig // конфиг для базы данных POSTGRES
@@ -30,7 +30,7 @@ func LoadConfig() (*BizServiceConfig, error) {
 	}
 
 	// загружаем данные из .yml файла для serverConfig
-	serverConfig, err := configs.LoadYAMLConfig[configs.ServerConfig](os.Getenv("SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultServerConfig)
+	serverConfig, err := configs.LoadYAMLConfig[configs.HttpServerConfig](os.Getenv("SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultServerConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}

@@ -1,9 +1,8 @@
-package server
+package httpserver
 
 import (
-	"bot/internal/server/handlers"
+	"bot/internal/server/http_server/handlers"
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"pkg/configs"
@@ -14,16 +13,16 @@ import (
 )
 
 // структура серверя для ботов
-type BotServiceServer struct {
-	httpServer *http.Server          // базовый сервер из пакета http
-	router     *gin.Engine           // роутер gin
-	config     *configs.ServerConfig // базовый конфиг
-	Handler    *handlers.BotHandler  // хэндлер
-	stopChan   chan struct{}         // канал для синхронизации горутин
+type BotGateway struct {
+	httpServer *http.Server              // базовый сервер из пакета http
+	router     *gin.Engine               // роутер gin
+	config     *configs.HttpServerConfig // базовый конфиг
+	Handler    *handlers.BotHttpHandler  // хэндлер
+	stopChan   chan struct{}             // канал для синхронизации горутин
 }
 
 // Конструктор для сервера
-func NewBotServiceServer(ctx context.Context, config *configs.ServerConfig, handler *handlers.BotHandler) (*BotServiceServer, error) {
+func NewBotGateway(ctx context.Context, config *configs.HttpServerConfig, handler *handlers.BotHttpHandler) (*BotGateway, error) {
 	// создаём экземпляр роутера
 	router := gin.Default()
 	err := router.SetTrustedProxies(nil)
@@ -40,7 +39,7 @@ func NewBotServiceServer(ctx context.Context, config *configs.ServerConfig, hand
 
 	router.Use(middleware.CORSMiddleware()) // используем для всех маршруторв работу с CORS
 
-	return &BotServiceServer{
+	return &BotGateway{
 		router:   router,
 		config:   config,
 		Handler:  handler,
@@ -49,14 +48,13 @@ func NewBotServiceServer(ctx context.Context, config *configs.ServerConfig, hand
 }
 
 // Метод для маршрутизации сервера
-func (a *BotServiceServer) SetUpRoutes() {
+func (a *BotGateway) SetUpRoutes() {
 	a.router.POST("/webhook", a.Handler.HandleWebhook) // основной метод
 }
 
 // Метод для запуска сервера
-func (a *BotServiceServer) Run() error {
+func (a *BotGateway) Run() error {
 	a.SetUpRoutes()
-	fmt.Println("установили роуты!")
 
 	a.httpServer = &http.Server{
 		Handler: a.router,
@@ -68,7 +66,7 @@ func (a *BotServiceServer) Run() error {
 }
 
 // Метод для graceful shutdown
-func (a *BotServiceServer) Shutdown(ctx context.Context) error {
+func (a *BotGateway) Shutdown(ctx context.Context) error {
 
 	// 1️⃣ Сначала закрываем HTTP сервер (перестаем принимать новые запросы)
 	// Это важно сделать первым, чтобы новые запросы не пошли в уже закрывающиеся клиенты
@@ -82,17 +80,9 @@ func (a *BotServiceServer) Shutdown(ctx context.Context) error {
 	// 3️⃣ Даем время завершить текущие операции (например, отправку сообщений)
 	time.Sleep(1 * time.Second)
 
-	// 4️⃣ Закрываем gRPC клиент (активное соединение)
-	if a.Handler.GrpcClient != nil {
-		log.Println("📞 Закрываем gRPC соединение...")
-		if err := a.Handler.GrpcClient.Close(); err != nil {
-			log.Printf("Ошибка при закрытии gRPC клиента: %v", err)
-		}
-	}
-
 	// 5️⃣ Для Telegram клиента - просто логируем (можно ничего не делать)
 	log.Println("Telegram клиент: ресурсы будут очищены сборщиком мусора")
 
-	log.Println("Server shutdown completed")
+	log.Println("HTTP BOT Server shutdown completed")
 	return nil
 }

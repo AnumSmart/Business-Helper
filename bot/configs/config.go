@@ -10,12 +10,13 @@ import (
 
 // структрура конфига для сервиса сервера бота
 type BotServiceConfig struct {
-	ServerConf *configs.ServerConfig
+	HTTPServerConfig *configs.HttpServerConfig
+	GRPCServerConfig *configs.GRPCServerConfig
 }
 
 // путь к .env файлу
 const (
-	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\bot\\.env"
+	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\server\\.env"
 )
 
 // загружаем конфиг-данные из .env
@@ -25,13 +26,20 @@ func LoadBotServiceConfig() (*BotServiceConfig, error) {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}
 
-	// загружаем данные из .yml файла для serverConfig
-	serverConfig, err := configs.LoadYAMLConfig[configs.ServerConfig](os.Getenv("BOT_SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultServerConfig)
+	// загружаем данные из .yml файла для httpServerConfig
+	httpServerConfig, err := configs.LoadYAMLConfig[configs.HttpServerConfig](os.Getenv("BOT_HTTP_SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultServerConfig)
+	if err != nil {
+		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
+	}
+
+	// загружаем данные из .yml файла для grpcServerConfig
+	grpcServerConfig, err := configs.LoadYAMLConfig[configs.GRPCServerConfig](os.Getenv("BOT_GRPC_SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultGRPCServerConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}
 
 	return &BotServiceConfig{
-		ServerConf: serverConfig,
+		HTTPServerConfig: httpServerConfig,
+		GRPCServerConfig: grpcServerConfig,
 	}, nil
 }

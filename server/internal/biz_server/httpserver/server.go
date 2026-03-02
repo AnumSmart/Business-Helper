@@ -15,12 +15,12 @@ import (
 type BizServer struct {
 	httpServer *http.Server                   // базовый сервер из пакета http
 	router     *gin.Engine                    // роутер gin
-	config     *configs.ServerConfig          // базовый конфиг
+	config     *configs.HttpServerConfig      // базовый конфиг
 	Handler    interf.BizHTTPHandlerInterface // интерфейс слоя хэндлеров
 }
 
 // Конструктор для сервера
-func NewBizServer(ctx context.Context, config *configs.ServerConfig, handler interf.BizHTTPHandlerInterface) (*BizServer, error) {
+func NewBizServer(ctx context.Context, config *configs.HttpServerConfig, handler interf.BizHTTPHandlerInterface) (*BizServer, error) {
 	// создаём экземпляр роутера
 	router := gin.Default()
 	err := router.SetTrustedProxies(nil)
