@@ -15,8 +15,8 @@ import (
 // BotGrpcClient представляет gRPC клиент для сервиса бота
 // Инкапсулирует соединение и сгенерированный клиент
 type BotGrpcClient struct {
-	conn   *grpc.ClientConn    // Физическое соединение с сервером
-	client pb.BotServiceClient // Сгенерированный клиент для вызова методов
+	conn       *grpc.ClientConn    // Физическое соединение с сервером
+	grpcClient pb.BotServiceClient // Сгенерированный клиент для вызова методов
 }
 
 // NewBotGrpcClient создает новый gRPC клиент и устанавливает соединение с сервером
@@ -38,8 +38,8 @@ func NewBotGrpcClient(serverAddr string) (*BotGrpcClient, error) {
 	client := pb.NewBotServiceClient(conn)
 
 	return &BotGrpcClient{
-		conn:   conn,
-		client: client,
+		conn:       conn,
+		grpcClient: client,
 	}, nil
 }
 
@@ -53,10 +53,10 @@ func (c *BotGrpcClient) Close() error {
 func (c *BotGrpcClient) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	// Вызываем сгенерированный метод клиента
 	// Запрос автоматически сериализуется в protobuf и отправляется по gRPC
-	return c.client.ProcessUpdate(ctx, req)
+	return c.grpcClient.ProcessUpdate(ctx, req)
 }
 
 // SendMessage отправляет запрос на отправку сообщения от бота
 func (c *BotGrpcClient) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
-	return c.client.SendMessage(ctx, req)
+	return c.grpcClient.SendMessage(ctx, req)
 }

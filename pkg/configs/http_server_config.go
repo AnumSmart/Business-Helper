@@ -3,7 +3,7 @@ package configs
 import "time"
 
 // структура для конфига сервера
-type ServerConfig struct {
+type HttpServerConfig struct {
 	Host           string        `yaml:"host"`
 	Port           string        `yaml:"port"`
 	ReadTimeout    time.Duration `yaml:"read_timeout"`
@@ -13,8 +13,8 @@ type ServerConfig struct {
 }
 
 // функция для создания конфига сервера по - дефолту
-func UseDefaultServerConfig() *ServerConfig {
-	return &ServerConfig{
+func UseDefaultServerConfig() *HttpServerConfig {
+	return &HttpServerConfig{
 		Host:           "localhost",
 		Port:           "8080",
 		ReadTimeout:    10 * time.Second,
@@ -25,7 +25,7 @@ func UseDefaultServerConfig() *ServerConfig {
 }
 
 // метод конфига сервера для формирования адреса
-func (c *ServerConfig) Addr() string {
+func (c *HttpServerConfig) Addr() string {
 	return c.Host + ":" + c.Port
 }
 

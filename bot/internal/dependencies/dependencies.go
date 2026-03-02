@@ -3,8 +3,12 @@ package dependencies
 import (
 	"bot/configs"
 	"bot/internal/config"
-	grpc_client "bot/internal/server/grpc_client"
-	"bot/internal/server/handlers"
+	grpcclient "bot/internal/server/grpc_client"
+	handlersgrpc "bot/internal/server/grpc_server/handlers_grpc"
+	"bot/internal/server/http_server/handlers"
+	"bot/internal/server/service"
+	"sync"
+
 	httpclient "bot/internal/server/http_client"
 	"context"
 
@@ -14,11 +18,15 @@ import (
 
 // определяем зависимости для сервиса ботов
 type BotServiceDependencies struct {
-	BotConfig       *config.BotConfig          // структрура конфига для создания бота
-	BotServerconfig *configs.BotServiceConfig  // базовый конфиг
-	BotGrpcClient   *grpc_client.BotGrpcClient // клиент для работы по grpc
-	BotHTTPClient   *httpclient.BotHTTPClient  // клиент для работы по HTTP
-	BotHandler      *handlers.BotHandler       // хэндлер для сервиса ботов
+	BotConfig       *config.BotConfig            // структрура конфига для создания бота
+	BotServerconfig *configs.BotServiceConfig    // базовый конфиг
+	BotGrpcClient   *grpcclient.BotGrpcClient    // клиент для работы по grpc
+	BotHTTPClient   *httpclient.BotHTTPClient    // клиент для работы по HTTP
+	BotHttpHandler  *handlers.BotHttpHandler     // хэндлер для http сервера бота
+	BotGrpcHandler  *handlersgrpc.BotGRPCHandler // хэндлер для grpc сервера бота
+
+	closeOnce sync.Once // для того, чтобы функция освобождения ресурсов выполнилась только 1 раз
+	closeErr  error
 }
 
 // InitDependencies инициализирует общие зависимости для bot_service
@@ -40,24 +48,55 @@ func InitDependencies(ctx context.Context) (*BotServiceDependencies, error) {
 	}
 
 	// создаём клиент, который может общаться по grpc
-	botGrpcClient, err := grpc_client.NewBotGrpcClient("localhost:50051") // пока жестко забили адрес, нужно вынести в конфиг!
+	botGrpcClient, err := grpcclient.NewBotGrpcClient("localhost:50051") // пока жестко забили адрес, нужно вынести в конфиг!
 	if err != nil {
 		return nil, fmt.Errorf("failed to create botGRPC client: %w", err)
 	}
 
-	fmt.Println("создали grpc клиент")
-
 	// создаём клиент, который может общаться по HTTP
 	botHTTPClient := httpclient.NewClient(botConf.BotToken)
 
-	// создаём хэндлер для сервиса бота
-	botHandler := handlers.NewBotHandler(botGrpcClient, botHTTPClient)
+	// создаём сервисный слой для бота
+	botService := service.NewBotService(botGrpcClient, botHTTPClient)
+
+	// создаём хэндлер для http сервера бота
+	botHttpHandler := handlers.NewBotHandler(botService)
+
+	// сощдаём хэндлер для grpc сервера бота
+	botGrpcHandler := handlersgrpc.NewBotGRPCHandler(botService)
 
 	return &BotServiceDependencies{
 		BotConfig:       botConf,
 		BotServerconfig: serviceConf,
 		BotGrpcClient:   botGrpcClient,
 		BotHTTPClient:   botHTTPClient,
-		BotHandler:      botHandler,
+		BotHttpHandler:  botHttpHandler,
+		BotGrpcHandler:  botGrpcHandler,
 	}, nil
+}
+
+// метод структуры зависимостей для осбобождения ресурсов
+func (d *BotServiceDependencies) Close() error {
+	d.closeOnce.Do(func() {
+		var errs []error
+
+		// Закрываем gRPC клиент (В ПЕРВУЮ ОЧЕРЕДЬ!)
+		if d.BotGrpcClient != nil {
+			if err := d.BotGrpcClient.Close(); err != nil {
+				errs = append(errs, fmt.Errorf("grpc client: %w", err))
+			}
+		}
+
+		// проверяем аггрегированные ошибки
+		if len(errs) > 0 {
+			d.closeErr = fmt.Errorf("close errors: %v", errs)
+		}
+	})
+
+	// выводим сообщение, что ресурсы освобождены
+	if d.closeErr == nil {
+		fmt.Println("Ресурсы - освобождены")
+	}
+
+	return d.closeErr
 }
