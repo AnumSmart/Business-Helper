@@ -1,11 +1,11 @@
 package httpserver
 
 import (
+	"bot/internal/config"
 	"bot/internal/server/http_server/handlers"
 	"context"
 	"log"
 	"net/http"
-	"pkg/configs"
 	"pkg/middleware"
 	"time"
 
@@ -14,15 +14,15 @@ import (
 
 // структура серверя для ботов
 type BotGateway struct {
-	httpServer *http.Server              // базовый сервер из пакета http
-	router     *gin.Engine               // роутер gin
-	config     *configs.HttpServerConfig // базовый конфиг
-	Handler    *handlers.BotHttpHandler  // хэндлер
-	stopChan   chan struct{}             // канал для синхронизации горутин
+	httpServer *http.Server                // базовый сервер из пакета http
+	router     *gin.Engine                 // роутер gin
+	config     *config.BotHttpServerConfig // конфиг http сервера на базе общего конфига
+	Handler    *handlers.BotHttpHandler    // хэндлер
+	stopChan   chan struct{}               // канал для синхронизации горутин
 }
 
 // Конструктор для сервера
-func NewBotGateway(ctx context.Context, config *configs.HttpServerConfig, handler *handlers.BotHttpHandler) (*BotGateway, error) {
+func NewBotGateway(ctx context.Context, config *config.BotHttpServerConfig, handler *handlers.BotHttpHandler) (*BotGateway, error) {
 	// создаём экземпляр роутера
 	router := gin.Default()
 	err := router.SetTrustedProxies(nil)

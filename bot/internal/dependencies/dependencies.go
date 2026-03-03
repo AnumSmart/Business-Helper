@@ -48,7 +48,7 @@ func InitDependencies(ctx context.Context) (*BotServiceDependencies, error) {
 	}
 
 	// создаём клиент, который может общаться по grpc
-	botGrpcClient, err := grpcclient.NewBotGrpcClient("localhost:50051") // пока жестко забили адрес, нужно вынести в конфиг!
+	botGrpcClient, err := grpcclient.NewBotGrpcClient(botConf.GRPCServer)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create botGRPC client: %w", err)
 	}

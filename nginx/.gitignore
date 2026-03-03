@@ -1,0 +1,55 @@
+# SSL сертификаты и ключи
+*.pem
+*.key
+*.crt
+*.csr
+certificates/
+ssl/
+
+# Let's Encrypt
+.well-known/
+acme-challenge/
+webroot/
+/etc/letsencrypt/
+
+# Логи
+*.log
+logs/
+/var/log/nginx/
+access.log
+error.log
+
+# Бэкапы и временные файлы
+*~
+*.swp
+*.swo
+*.bak
+*.orig
+*.backup
+*.back
+*.old
+*.tmp
+.DS_Store
+
+# Docker
+Dockerfile-
+.dockerignore
+.docker/
+*.tar
+*.tar.gz
+*.tgz
+.cache/
+docker-contexts/
+
+# Секреты
+.env
+.env.*
+!.env.example
+secrets/
+secrets.yaml
+secrets.yml
+
+# Динамические конфиги (если есть)
+blacklist.conf
+whitelist.conf
+dynamic/

@@ -1,1 +1,25 @@
+# Go специфичное
 .env
+
+# Бинарники
+telegram-bot
+bot
+*.exe
+
+# Зависимости
+vendor/
+
+# Тесты
+*.test
+coverage.out
+
+# Данные бота
+/data/
+/files/
+/temp/
+
+# Локальные конфиги
+botConfig.yml
+
+*.yaml
+

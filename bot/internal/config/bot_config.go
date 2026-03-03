@@ -21,7 +21,7 @@ type BotConfig struct {
 }
 
 const (
-	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\server\\.env"
+	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\bot\\.env"
 )
 
 func LoadBotConfig() (config *BotConfig, err error) {

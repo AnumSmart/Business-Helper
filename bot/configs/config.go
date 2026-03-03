@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"bot/internal/config"
 	"fmt"
 	"os"
 	"pkg/configs"
@@ -10,7 +11,7 @@ import (
 
 // структрура конфига для сервиса сервера бота
 type BotServiceConfig struct {
-	HTTPServerConfig *configs.HttpServerConfig
+	HTTPServerConfig *config.BotHttpServerConfig
 	GRPCServerConfig *configs.GRPCServerConfig
 }
 
@@ -26,8 +27,8 @@ func LoadBotServiceConfig() (*BotServiceConfig, error) {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}
 
-	// загружаем данные из .yml файла для httpServerConfig
-	httpServerConfig, err := configs.LoadYAMLConfig[configs.HttpServerConfig](os.Getenv("BOT_HTTP_SERVER_CONFIG_ADDRESS_STRING"), configs.UseDefaultServerConfig)
+	// загружаем данные конфига для HTTP сервера
+	httpServerConfig, err := config.LoadBotHttpServerConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Error during loading config: %s\n", err.Error())
 	}
