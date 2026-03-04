@@ -4,9 +4,13 @@ import (
 	"bot/internal/domain"
 	"bot/internal/server/http_server/converter"
 	"bot/internal/server/service"
+	"context"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	tele "gopkg.in/telebot.v4"
 )
 
 // BotHttpHandler обрабатывает входящие вебхуки от Telegram
@@ -22,7 +26,7 @@ func NewBotHandler(botService *service.BotService) *BotHttpHandler {
 	}
 }
 
-// HandleWebhook - основной метод обработки входящих вебхуков от Telegram
+// HandleWebhook - основной метод обработки входящих вебхуков от Telegram, режим webhook
 // Принимает gin.Context для доступа к запросу и ответу
 func (h *BotHttpHandler) HandleWebhook(c *gin.Context) {
 	var update domain.TelegramUpdate
@@ -60,4 +64,103 @@ func (h *BotHttpHandler) HandleWebhook(c *gin.Context) {
 	// Успешная обработка - возвращаем 200 OK
 	// Telegram ожидает 200, чтобы не переотправлять update
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// хэндлер для обработки команды /start от телеграмм бота в polling режиме
+func (h *BotHttpHandler) HandleBotStart(c tele.Context) error {
+	return c.Send("Добро пожаловать! Я бот, интегрированный с вашим HTTP сервером.")
+}
+
+// хэндлер для обработки всех текстовых сообщений от телеграмм бота в polling режиме
+func (h *BotHttpHandler) HandleBotMessage(c tele.Context) error {
+
+	//конвертируем информацию из контектса сообщения в доменную модель
+	update, err := converter.ConvertToUpdate(c)
+	if err != nil {
+		// Логируем ошибку конвертации
+		log.Printf("❌ Ошибка конвертации update: %v", err)
+		return c.Send("⚠️ Внутренняя ошибка формата")
+	}
+
+	// Создаём стандартный контекст для бизнес-логики
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Конвертируем Telegram формат в gRPC формат
+	grpcUpdate := converter.ConvertToGRPCUpdate(update)
+
+	// Отправляем на gRPC сервер для бизнес-логики
+	// передает контекст логики в gRPC вызов
+	resp, err := h.BotService.ProcessUpdate(ctx, grpcUpdate)
+	if err != nil {
+		log.Printf("❌ Ошибка gRPC: %v", err)
+
+		// Отправляем пользователю понятное сообщение
+		return c.Send("🔌 Сервер временно недоступен. Попробуйте позже.")
+	}
+
+	if !resp.Success {
+		log.Printf("⚠️ gRPC вернул ошибку: %v", resp.Error)
+		return c.Send("⚠️ Не удалось обработать запрос")
+	}
+
+	// Если сервер вернул сообщения для отправки - отправляем их в Telegram
+	if len(resp.Messages) > 0 {
+		// тут вызывается http клиент из сервисного слоя и передаёт ответ боту
+		if err := h.BotService.SendHTTPMessages(resp.Messages); err != nil {
+			log.Printf("❌ Ошибка отправки через HTTP клиент: %v", err)
+			// Не возвращаем ошибку в Telegram, чтобы не было ретраев
+			c.Send("⚠️ Сообщение получено, но не доставлено")
+			return nil
+		}
+	}
+	return nil
+}
+
+// хэндлер для обработки callback-запросов от inline клавиатур от телеграмм бота в polling режиме
+func (h *BotHttpHandler) HandleBotCallback(c tele.Context) error {
+	//конвертируем информацию из контектса сообщения в доменную модель
+	update, err := converter.ConvertToUpdate(c)
+	if err != nil {
+		// Логируем ошибку конвертации
+		log.Printf("❌ Ошибка конвертации update: %v", err)
+		return c.Send("⚠️ Внутренняя ошибка формата")
+	}
+
+	// Создаём стандартный контекст для бизнес-логики
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Конвертируем в gRPC формат
+	grpcUpdate := converter.ConvertToGRPCUpdate(update)
+
+	// Отправляем на gRPC сервер
+	resp, err := h.BotService.ProcessUpdate(ctx, grpcUpdate)
+	if err != nil {
+		// Важно! Для callback нужно ответить даже при ошибке
+		c.Respond(&tele.CallbackResponse{
+			Text: "❌ Ошибка обработки",
+		})
+		return err
+	}
+
+	if !resp.Success {
+		log.Printf("⚠️ gRPC вернул ошибку: %v", resp.Error)
+		return c.Send("⚠️ Не удалось обработать запрос")
+	}
+
+	// Если сервер вернул сообщения для отправки - отправляем их в Telegram
+	if len(resp.Messages) > 0 {
+		// тут вызывается http клиент из сервисного слоя и передаёт ответ боту
+		if err := h.BotService.SendHTTPMessages(resp.Messages); err != nil {
+			log.Printf("❌ Ошибка отправки через HTTP клиент: %v", err)
+			// Не возвращаем ошибку в Telegram, чтобы не было ретраев
+			c.Send("⚠️ Сообщение получено, но не доставлено")
+			return nil
+		}
+	}
+
+	return c.Respond(&tele.CallbackResponse{
+		Text: "✓ Готово",
+	})
 }

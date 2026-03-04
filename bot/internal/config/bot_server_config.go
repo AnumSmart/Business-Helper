@@ -65,7 +65,6 @@ func LoadBotHttpServerConfig() (*BotHttpServerConfig, error) {
 
 	// Загрузка конфига
 	config, err := configs.LoadYAMLConfig[BotHttpServerConfig](os.Getenv("BOT_HTTP_SERVER_CONFIG_ADDRESS_STRING"), UseDefaultBotHttpServerConfig)
-
 	if err != nil {
 		// Обрабатываем ошибку (файл есть, но не читается или не парсится)
 		log.Fatalf("Failed to load config: %v", err)

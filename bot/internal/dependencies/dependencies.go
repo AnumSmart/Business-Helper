@@ -19,7 +19,7 @@ import (
 // определяем зависимости для сервиса ботов
 type BotServiceDependencies struct {
 	BotConfig       *config.BotConfig            // структрура конфига для создания бота
-	BotServerconfig *configs.BotServiceConfig    // базовый конфиг
+	BotServerconfig *configs.BotServiceConfig    // конфиг сервиса
 	BotGrpcClient   *grpcclient.BotGrpcClient    // клиент для работы по grpc
 	BotHTTPClient   *httpclient.BotHTTPClient    // клиент для работы по HTTP
 	BotHttpHandler  *handlers.BotHttpHandler     // хэндлер для http сервера бота

@@ -1,6 +1,4 @@
 # Go специфичное
-.env
-
 # Бинарники
 telegram-bot
 bot
@@ -20,6 +18,5 @@ coverage.out
 
 # Локальные конфиги
 botConfig.yml
-
 *.yaml
-
+.env
