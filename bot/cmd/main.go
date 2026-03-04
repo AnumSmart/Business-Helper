@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Создаем HTTP-сервер бота
-	httpServer, err := httpserver.NewBotGateway(ctx, deps.BotServerconfig.HTTPServerConfig, deps.BotHttpHandler)
+	httpServer, err := httpserver.NewBotGateway(ctx, deps.BotServerconfig.HTTPServerConfig, deps.BotConfig, deps.BotHttpHandler)
 	if err != nil {
 		panic("Failed to create server!")
 	}

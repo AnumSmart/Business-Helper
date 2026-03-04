@@ -17,7 +17,7 @@ type BotServiceConfig struct {
 
 // путь к .env файлу
 const (
-	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\server\\.env"
+	envPath = "c:\\Son_Alex\\GO_projects\\biz_helper\\bot\\.env"
 )
 
 // загружаем конфиг-данные из .env
