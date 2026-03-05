@@ -29,7 +29,7 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	incomingMsg := converter.ToDomainMessage(msg)
 
 	// Сохранаяем сообщение в БД через сервисный слой
-	err := b.Service.CheckAndSaveMsg(incomingMsg)
+	err := b.Service.CheckAndSaveMsg(ctx, incomingMsg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save incoming message: %w", err)
 	}
@@ -50,10 +50,13 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	}
 
 	// Сохранаяем сообщение в БД через сервисный слой
-	err = b.Service.CheckAndSaveMsg(outgoingMsg)
+	err = b.Service.CheckAndSaveMsg(ctx, outgoingMsg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save outgoing message: %w", err)
 	}
+
+	// в ответе пеперадём юзеру тестовую кливиатуру (через grpc на сервер бота)
+	replyMakrUp := converter.ToProtoReplyMarkup(b.Service.CreateTestKeyboard())
 
 	// Формируем ответ для бота
 
@@ -61,8 +64,9 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 		Success: true,
 		Messages: []*pb.OutgoingMessage{
 			{
-				ChatId: msg.ChatId,
-				Text:   replyText,
+				ChatId:      msg.ChatId,
+				Text:        replyText,
+				ReplyMarkup: replyMakrUp,
 			},
 		},
 	}
@@ -76,7 +80,7 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 	callBackLog := converter.ToCallbackLog(callback)
 
 	// проверяем и сохраняем данные в БД
-	err := b.Service.CheckAndSaveCallBack(callBackLog)
+	err := b.Service.CheckAndSaveCallBack(ctx, callBackLog)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save callback: %w", err)
 	}

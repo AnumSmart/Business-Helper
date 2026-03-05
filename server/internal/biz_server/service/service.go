@@ -16,8 +16,8 @@ type ServiceForHTTPHandler interface {
 // ServiceForGRPCHandler - интерфейс для бизнес-логики сообщений (отвечаем, если есть запросы со стороны бота), работа с GRPC
 type ServiceForGRPCHandler interface {
 	// проверяем и сохраняем сообщение
-	CheckAndSaveMsg(msg *domain.Message) error
-	CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error
+	CheckAndSaveMsg(cxt context.Context, msg *domain.Message) error
+	CheckAndSaveCallBack(cxt context.Context, callBackLog *domain.CallbackLog) error
 	// генерируем ответ
 	GenerateReply(text string, user *domain.User) string
 	CreateTestKeyboard() *domain.ReplyMarkup
@@ -53,14 +53,14 @@ func (s *BizService) GetEcho() string {
 }
 
 // метод для проверки и сохданения входящего сообщения (по GRPC) в базу
-func (s *BizService) CheckAndSaveMsg(msg *domain.Message) error {
+func (s *BizService) CheckAndSaveMsg(ctx context.Context, msg *domain.Message) error {
 	// возможные проверки.....
 	if msg == nil {
 		return fmt.Errorf("Incoming messgage can not be nil! [error in service layer]")
 	}
 
 	// сохраняем входящее сообщение в базу данных
-	if err := s.repo.Save(msg); err != nil {
+	if err := s.repo.Save(ctx, msg); err != nil {
 		return fmt.Errorf("failed to save outgoing message: %w", err)
 	}
 
@@ -109,13 +109,13 @@ func (s *BizService) CreateTestKeyboard() *domain.ReplyMarkup {
 }
 
 // метод для проверки и сохданения callback в базу
-func (s *BizService) CheckAndSaveCallBack(callBackLog *domain.CallbackLog) error {
+func (s *BizService) CheckAndSaveCallBack(ctx context.Context, callBackLog *domain.CallbackLog) error {
 	if callBackLog == nil {
 		return fmt.Errorf("callBackLog can not be nil! [error in service layer]")
 	}
 
 	// сохраняем callBack в базу
-	err := s.repo.SaveCallback(callBackLog)
+	err := s.repo.SaveCallback(ctx, callBackLog)
 	if err != nil {
 		return err
 	}
