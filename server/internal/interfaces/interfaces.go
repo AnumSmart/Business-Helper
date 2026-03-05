@@ -5,14 +5,6 @@ import (
 	pb "global_models/grpc/bot"
 )
 
-// интерфейс слоя базы данных для авторизации юзеров
-type DBRepoInterface interface {
-}
-
-// интерфейс кэша
-type CacheRepoInterface interface {
-}
-
 // интерфейс работы хэндлера по grpc (констракты согласно .proto)
 type GRPCHandlerInterface interface {
 	// ProcessMessage - обработка входящего сообщения

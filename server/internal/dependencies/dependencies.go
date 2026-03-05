@@ -53,7 +53,7 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		return nil, fmt.Errorf("failed to create PostgreSQL repository: %w", err)
 	}
 
-	// создаём репозиторий для авторизации пользователя
+	// создаём репозиторий для сохранения информации при работе с ботом
 	bizRepo := repository.NewBizDBRepository(pgPool)
 
 	// создаём экземпляр redis
@@ -100,6 +100,8 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		BizHTTPHandler: bizHTTPHandler,
 		BizGRPCHandler: bizGRPCHandler,
 		bizGRPCClient:  grpcClient, // Сохраняем для закрытия
+		pgPool:         pgPool,
+		redisCacherepo: redisCacherepo,
 	}, nil
 }
 
