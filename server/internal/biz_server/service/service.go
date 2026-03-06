@@ -21,6 +21,7 @@ type ServiceForGRPCHandler interface {
 	// генерируем ответ
 	GenerateReply(text string, user *domain.User) string
 	CreateTestKeyboard() *domain.ReplyMarkup
+	CreateWelcomeReplyKeyboard() *domain.ReplyMarkup
 	AnswerIncomingMsg(ctx context.Context, req *domain.IncomingMessage) (*domain.MessageResponse, error)
 }
 
@@ -73,7 +74,7 @@ func (s *BizService) GenerateReply(text string, user *domain.User) string {
 	// В реальном проекте здесь может быть AI, бизнес-правила и т.д.
 
 	if text == "/start" {
-		return "Добро пожаловать! Я бот-помощник. Чем могу помочь?"
+		return "Добро пожаловать! Я бот-помощник. Если вы хотите посмотреть работы по организации дизайна - нажмите кнопку 'Посмотреть'"
 	}
 
 	if text == "/help" {
@@ -101,6 +102,21 @@ func (s *BizService) CreateTestKeyboard() *domain.ReplyMarkup {
 			// Второй ряд
 			{
 				{Text: "Отмена"},
+			},
+		},
+		ResizeKeyboard:  true, // Подогнать размер под кнопки
+		OneTimeKeyboard: true, // Спрятать после использования
+	}
+}
+
+// CreateWelcomeReplyKeyboard создает приветственную клавиатуру
+func (s *BizService) CreateWelcomeReplyKeyboard() *domain.ReplyMarkup {
+	return &domain.ReplyMarkup{
+		InlineKeyboard: [][]domain.InlineButton{
+			// Первый ряд
+			{
+				{Text: "Посмотреть",
+					URL: "https://www.google.com/"},
 			},
 		},
 		ResizeKeyboard:  true, // Подогнать размер под кнопки

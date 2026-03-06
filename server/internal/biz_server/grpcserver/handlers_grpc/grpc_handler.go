@@ -56,7 +56,7 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	}
 
 	// в ответе пеперадём юзеру тестовую кливиатуру (через grpc на сервер бота)
-	replyMakrUp := converter.ToProtoReplyMarkup(b.Service.CreateTestKeyboard())
+	replyMakrUp := converter.ToProtoReplyMarkup(b.Service.CreateWelcomeReplyKeyboard())
 
 	// Формируем ответ для бота
 
