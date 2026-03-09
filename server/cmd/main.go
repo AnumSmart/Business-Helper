@@ -49,7 +49,7 @@ func main() {
 	// запуск GRPC сервера
 	go func() {
 		fmt.Printf("🚀 GRPC сервер основной логики запускается на %s\n", deps.BizConfig.GRPCServerConf.Addr())
-		if err := httpServer.Run(); err != nil {
+		if err := grpcServer.Run(); err != nil {
 			log.Fatalf("GRPC Server --- failed: %v", err)
 		}
 	}()
