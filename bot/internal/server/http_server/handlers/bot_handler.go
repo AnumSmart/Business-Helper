@@ -68,7 +68,22 @@ func (h *BotHttpHandler) HandleWebhook(c *gin.Context) {
 
 // хэндлер для обработки команды /start от телеграмм бота в polling режиме
 func (h *BotHttpHandler) HandleBotStart(c tele.Context) error {
-	return c.Send("Добро пожаловать! Я бот, интегрированный с вашим HTTP сервером.")
+	// Создаем inline-кнопку напрямую
+	btn := tele.InlineButton{
+		Text: "Посмотреть",
+		Data: "view_action",
+		URL:  "google.com",
+	}
+
+	// Создаем клавиатуру с кнопкой
+	markup := &tele.ReplyMarkup{
+		InlineKeyboard: [][]tele.InlineButton{
+			{btn},
+		},
+	}
+
+	// Отправляем сообщение с клавиатурой
+	return c.Send("Добро пожаловать! Я бот, интегрированный с вашим HTTP сервером.", markup)
 }
 
 // хэндлер для обработки всех текстовых сообщений от телеграмм бота в polling режиме
