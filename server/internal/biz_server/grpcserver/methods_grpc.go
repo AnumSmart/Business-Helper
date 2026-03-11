@@ -39,9 +39,11 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 		if err != nil {
 			// Если специалист вернул ошибку - записываем её
 			// Но продолжаем работу (может быть, еще есть callback)
+			fmt.Println("ошибка при обработке сообщения в методе grc сервера")
 			errors = append(errors, err)
 		} else if resp != nil {
 			// Если специалист успешно обработал - сохраняем ответ
+			fmt.Printf("response status обработки сообщения:%v\n", resp.Success)
 			responses = append(responses, resp)
 		}
 	}
@@ -53,8 +55,10 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 		resp, err := s.Handler.ProcessCallback(ctx, req.CallbackQuery)
 
 		if err != nil {
+			fmt.Println("ошибка при обработке колбэка в методе grc сервера")
 			errors = append(errors, err)
 		} else if resp != nil {
+			fmt.Printf("response status обработки колбэка:%v\n", resp.Success)
 			responses = append(responses, resp)
 		}
 	}
@@ -85,6 +89,7 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 
 	// ШАГ 5: Если были ошибки - добавляем их в ответ
 	if len(errors) > 0 {
+		log.Println(len(errors))
 		finalResp.Success = false
 		// Объединяем все ошибки в одну строку
 		// Клиент увидит что-то вроде: "errors: [ошибка1 ошибка2]"
