@@ -3,6 +3,7 @@ package handlersgrpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"server/internal/biz_server/grpcserver/converter"
 	"server/internal/biz_server/service"
 	"server/internal/domain"
@@ -31,7 +32,8 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	// Сохранаяем сообщение в БД через сервисный слой
 	err := b.Service.CheckAndSaveMsg(ctx, incomingMsg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to save incoming message: %w", err)
+		//return nil, fmt.Errorf("failed to save incoming message: %w", err)
+		log.Printf("failed to save incoming message: %w", err)
 	}
 
 	// конвертируем пользователя из proto сообщения в доменную модель
@@ -52,7 +54,8 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	// Сохранаяем сообщение в БД через сервисный слой
 	err = b.Service.CheckAndSaveMsg(ctx, outgoingMsg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to save outgoing message: %w", err)
+		//return nil, fmt.Errorf("failed to save outgoing message: %w", err)
+		log.Printf("failed to save outgoing message: %w", err)
 	}
 
 	// в ответе пеперадём юзеру тестовую кливиатуру (через grpc на сервер бота)
@@ -82,7 +85,8 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 	// проверяем и сохраняем данные в БД
 	err := b.Service.CheckAndSaveCallBack(ctx, callBackLog)
 	if err != nil {
-		return nil, fmt.Errorf("failed to save callback: %w", err)
+		//return nil, fmt.Errorf("failed to save callback: %w", err)
+		log.Printf("failed to save callback: %w", err) // ---------------------- пока оставим логирование в случае невозможности записи в базу
 	}
 
 	// Анализируем данные callback и формируем ответ
@@ -96,6 +100,12 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
 			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n",
+		})
+	case "search":
+		// Отправляем новое сообщение с помощью
+		response.Messages = append(response.Messages, &pb.OutgoingMessage{
+			ChatId: callback.ChatId,
+			Text:   "Вот ссылка на поисковую систему:\n google.com\n",
 		})
 
 	default:
