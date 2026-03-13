@@ -1,1 +1,13 @@
 .env
+
+# Игнорировать bin в любом модуле
+*/bin/
+server/bin/
+
+# Игнорировать миграции в любом модуле
+*/migrations/
+server/migrations/
+
+# Игнорировать Commands.md в любом модуле
+*/Commands.md
+server/Commands.md

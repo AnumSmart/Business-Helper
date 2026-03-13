@@ -32,14 +32,14 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	// Сохранаяем сообщение в БД через сервисный слой
 	err := b.Service.CheckAndSaveMsg(ctx, incomingMsg)
 	if err != nil {
+		log.Printf("failed to save incoming message: %v", err)
 		//return nil, fmt.Errorf("failed to save incoming message: %w", err)
-		log.Printf("failed to save incoming message: %w", err)
 	}
 
 	// конвертируем пользователя из proto сообщения в доменную модель
 	user := converter.ToDomainUser(msg.From)
 
-	// генерируем ответ в сервисном слое
+	// генерируем ответ на текстовое сообщение в сервисном слое
 	replyText := b.Service.GenerateReply(incomingMsg.Text, user)
 
 	// создаём исходящее сообщение на базе domain типа, чтобы его сохранить
@@ -54,8 +54,8 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	// Сохранаяем сообщение в БД через сервисный слой
 	err = b.Service.CheckAndSaveMsg(ctx, outgoingMsg)
 	if err != nil {
+		log.Printf("failed to save outgoing message: %v", err)
 		//return nil, fmt.Errorf("failed to save outgoing message: %w", err)
-		log.Printf("failed to save outgoing message: %w", err)
 	}
 
 	// в ответе пеперадём юзеру тестовую кливиатуру (через grpc на сервер бота)
@@ -79,14 +79,17 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 
 // ProcessCallback - обработка callback от inline клавиатуры
 func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error) {
-	// Приводим входящий callback к domain типуб используем конвертер
+	// Добавим подробное логирование для отладки
+	log.Printf("🔍 ProcessCallback получил: ID=%s, UserID=%d, ChatID=%d, MessageID=%d, Data=%s",
+		callback.Id, callback.UserId, callback.ChatId, callback.MessageId, callback.Data)
+
+	// Приводим входящий callback к domain типу, используем конвертер
 	callBackLog := converter.ToCallbackLog(callback)
 
 	// проверяем и сохраняем данные в БД
 	err := b.Service.CheckAndSaveCallBack(ctx, callBackLog)
 	if err != nil {
-		//return nil, fmt.Errorf("failed to save callback: %w", err)
-		log.Printf("failed to save callback: %w", err) // ---------------------- пока оставим логирование в случае невозможности записи в базу
+		log.Printf("⚠️ failed to save callback: %v", err) // логируем, но не прерываем
 	}
 
 	// Анализируем данные callback и формируем ответ
@@ -94,27 +97,28 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		Success: true,
 	}
 
+	// ИСПОЛЬЗУЕМ callback.ChatId - это правильное поле!
 	switch callback.Data {
 	case "help":
-		// Отправляем новое сообщение с помощью
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
 			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n",
 		})
+
 	case "search":
-		// Отправляем новое сообщение с помощью
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
-			Text:   "Вот ссылка на поисковую систему:\n google.com\n",
+			Text:   "Вот ссылка на поисковую систему:\nhttps://www.google.com\n",
 		})
 
 	default:
-		// Ответ на неизвестную команду
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
 			Text:   fmt.Sprintf("Неизвестная команда: %s", callback.Data),
 		})
 	}
+
+	log.Printf("✅ ProcessCallback отправляет ответ с %d сообщениями", len(response.Messages))
 	return response, nil
 }
 

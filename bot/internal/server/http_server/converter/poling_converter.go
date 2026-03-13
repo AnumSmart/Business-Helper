@@ -61,11 +61,11 @@ func fillCallback(update *domain.TelegramUpdate, ctx tele.Context) {
 	callback := ctx.Callback()
 
 	update.CallbackQuery = &struct {
-		ID   string `json:"id"`
-		From struct {
+		ID   string   `json:"id"`
+		From struct { // ← это поле From нужно для UserId
 			ID int64 `json:"id"`
 		} `json:"from"`
-		Message struct {
+		Message struct { // ← это поле Message нужно для MessageId и ChatId
 			MessageID int64 `json:"message_id"`
 			Chat      struct {
 				ID int64 `json:"id"`
@@ -79,14 +79,14 @@ func fillCallback(update *domain.TelegramUpdate, ctx tele.Context) {
 
 	// Заполняем информацию об отправителе
 	if callback.Sender != nil {
-		update.CallbackQuery.From.ID = callback.Sender.ID
+		update.CallbackQuery.From.ID = callback.Sender.ID // ← это пойдет в UserId
 	}
 
 	// Заполняем информацию о сообщении и чате
 	if callback.Message != nil {
-		update.CallbackQuery.Message.MessageID = int64(callback.Message.ID)
+		update.CallbackQuery.Message.MessageID = int64(callback.Message.ID) // ← это пойдет в MessageId
 		if callback.Message.Chat != nil {
-			update.CallbackQuery.Message.Chat.ID = callback.Message.Chat.ID
+			update.CallbackQuery.Message.Chat.ID = callback.Message.Chat.ID // ← это пойдет в ChatId
 		}
 	}
 }
