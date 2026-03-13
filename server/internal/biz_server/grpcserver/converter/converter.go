@@ -63,20 +63,14 @@ func ToProtoResponse(resp *domain.MessageResponse) *pb.SendMessageResponse {
 // - Когда нажал (Timestamp)
 //
 // Поле ID оставляем пустым - его потом база данных сама присвоит
-func ToCallbackLog(pbCallback *pb.CallbackQuery) *domain.CallbackLog {
-	if pbCallback == nil {
-		return nil // Нет нажатия - ничего не записываем
-	}
-
-	// Создаем запись в журнале на нашем языке
+func ToCallbackLog(callback *pb.CallbackQuery) *domain.CallbackLog {
 	return &domain.CallbackLog{
-		CallbackID: pbCallback.Id,        // Уникальный номер нажатия
-		UserID:     pbCallback.UserId,    // ID пользователя (кто нажал)
-		ChatID:     pbCallback.ChatId,    // ID чата (где нажал)
-		MessageID:  pbCallback.MessageId, // ID сообщения (на что нажал)
-		Data:       pbCallback.Data,      // Данные кнопки (что именно нажал)
-		Timestamp:  time.Now(),           // Время нажатия (когда нажал)
-		// ID - оставляем пустым, база сама заполнит
+		CallbackID: callback.Id,
+		UserID:     callback.UserId,    // прямое поле, не callback.From.ID
+		MessageID:  callback.MessageId, // прямое поле, не callback.Message.ID
+		ChatID:     callback.ChatId,    // прямое поле, не callback.Message.Chat.ID
+		Data:       callback.Data,
+		Timestamp:  time.Now(),
 	}
 }
 

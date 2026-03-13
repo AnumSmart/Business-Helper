@@ -39,7 +39,7 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 		if err != nil {
 			// Если специалист вернул ошибку - записываем её
 			// Но продолжаем работу (может быть, еще есть callback)
-			fmt.Println("ошибка при обработке сообщения в методе grc сервера")
+			fmt.Println("ошибка при обработке сообщения в методе grc сервера", err.Error())
 			errors = append(errors, err)
 		} else if resp != nil {
 			// Если специалист успешно обработал - сохраняем ответ

@@ -4,7 +4,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v6.33.5
-// source: api/bot/bot.proto
+// source: bot/bot.proto
 
 // Определяет пространство имен пакета для protobuf. Это имя будет использоваться
 // в сгенерированном коде как префикс для всех сообщений и сервисов.
@@ -175,5 +175,5 @@ var BotService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/bot/bot.proto",
+	Metadata: "bot/bot.proto",
 }

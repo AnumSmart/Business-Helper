@@ -4,7 +4,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v6.33.5
-// source: api/bot/bot.proto
+// source: bot/bot.proto
 
 // Определяет пространство имен пакета для protobuf. Это имя будет использоваться
 // в сгенерированном коде как префикс для всех сообщений и сервисов.
@@ -41,7 +41,7 @@ type UpdateRequest struct {
 
 func (x *UpdateRequest) Reset() {
 	*x = UpdateRequest{}
-	mi := &file_api_bot_bot_proto_msgTypes[0]
+	mi := &file_bot_bot_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53,7 +53,7 @@ func (x *UpdateRequest) String() string {
 func (*UpdateRequest) ProtoMessage() {}
 
 func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[0]
+	mi := &file_bot_bot_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66,7 +66,7 @@ func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRequest) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{0}
+	return file_bot_bot_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *UpdateRequest) GetUpdateId() int64 {
@@ -106,7 +106,7 @@ type Message struct {
 
 func (x *Message) Reset() {
 	*x = Message{}
-	mi := &file_api_bot_bot_proto_msgTypes[1]
+	mi := &file_bot_bot_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -118,7 +118,7 @@ func (x *Message) String() string {
 func (*Message) ProtoMessage() {}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[1]
+	mi := &file_bot_bot_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -131,7 +131,7 @@ func (x *Message) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Message.ProtoReflect.Descriptor instead.
 func (*Message) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{1}
+	return file_bot_bot_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Message) GetMessageId() int64 {
@@ -198,7 +198,7 @@ type CallbackQuery struct {
 
 func (x *CallbackQuery) Reset() {
 	*x = CallbackQuery{}
-	mi := &file_api_bot_bot_proto_msgTypes[2]
+	mi := &file_bot_bot_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -210,7 +210,7 @@ func (x *CallbackQuery) String() string {
 func (*CallbackQuery) ProtoMessage() {}
 
 func (x *CallbackQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[2]
+	mi := &file_bot_bot_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -223,7 +223,7 @@ func (x *CallbackQuery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CallbackQuery.ProtoReflect.Descriptor instead.
 func (*CallbackQuery) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{2}
+	return file_bot_bot_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CallbackQuery) GetId() string {
@@ -274,7 +274,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_api_bot_bot_proto_msgTypes[3]
+	mi := &file_bot_bot_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -286,7 +286,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[3]
+	mi := &file_bot_bot_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -299,7 +299,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{3}
+	return file_bot_bot_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *User) GetId() int64 {
@@ -342,7 +342,7 @@ type Chat struct {
 
 func (x *Chat) Reset() {
 	*x = Chat{}
-	mi := &file_api_bot_bot_proto_msgTypes[4]
+	mi := &file_bot_bot_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -354,7 +354,7 @@ func (x *Chat) String() string {
 func (*Chat) ProtoMessage() {}
 
 func (x *Chat) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[4]
+	mi := &file_bot_bot_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -367,7 +367,7 @@ func (x *Chat) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Chat.ProtoReflect.Descriptor instead.
 func (*Chat) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{4}
+	return file_bot_bot_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Chat) GetId() int64 {
@@ -403,7 +403,7 @@ type UpdateResponse struct {
 
 func (x *UpdateResponse) Reset() {
 	*x = UpdateResponse{}
-	mi := &file_api_bot_bot_proto_msgTypes[5]
+	mi := &file_bot_bot_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -415,7 +415,7 @@ func (x *UpdateResponse) String() string {
 func (*UpdateResponse) ProtoMessage() {}
 
 func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[5]
+	mi := &file_bot_bot_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -428,7 +428,7 @@ func (x *UpdateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateResponse) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{5}
+	return file_bot_bot_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateResponse) GetSuccess() bool {
@@ -464,7 +464,7 @@ type OutgoingMessage struct {
 
 func (x *OutgoingMessage) Reset() {
 	*x = OutgoingMessage{}
-	mi := &file_api_bot_bot_proto_msgTypes[6]
+	mi := &file_bot_bot_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -476,7 +476,7 @@ func (x *OutgoingMessage) String() string {
 func (*OutgoingMessage) ProtoMessage() {}
 
 func (x *OutgoingMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[6]
+	mi := &file_bot_bot_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -489,7 +489,7 @@ func (x *OutgoingMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OutgoingMessage.ProtoReflect.Descriptor instead.
 func (*OutgoingMessage) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{6}
+	return file_bot_bot_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *OutgoingMessage) GetChatId() int64 {
@@ -529,7 +529,7 @@ type ReplyMarkup struct {
 
 func (x *ReplyMarkup) Reset() {
 	*x = ReplyMarkup{}
-	mi := &file_api_bot_bot_proto_msgTypes[7]
+	mi := &file_bot_bot_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -541,7 +541,7 @@ func (x *ReplyMarkup) String() string {
 func (*ReplyMarkup) ProtoMessage() {}
 
 func (x *ReplyMarkup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[7]
+	mi := &file_bot_bot_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -554,7 +554,7 @@ func (x *ReplyMarkup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyMarkup.ProtoReflect.Descriptor instead.
 func (*ReplyMarkup) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{7}
+	return file_bot_bot_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ReplyMarkup) GetType() isReplyMarkup_Type {
@@ -608,7 +608,7 @@ type InlineKeyboardMarkup struct {
 
 func (x *InlineKeyboardMarkup) Reset() {
 	*x = InlineKeyboardMarkup{}
-	mi := &file_api_bot_bot_proto_msgTypes[8]
+	mi := &file_bot_bot_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -620,7 +620,7 @@ func (x *InlineKeyboardMarkup) String() string {
 func (*InlineKeyboardMarkup) ProtoMessage() {}
 
 func (x *InlineKeyboardMarkup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[8]
+	mi := &file_bot_bot_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -633,7 +633,7 @@ func (x *InlineKeyboardMarkup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineKeyboardMarkup.ProtoReflect.Descriptor instead.
 func (*InlineKeyboardMarkup) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{8}
+	return file_bot_bot_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *InlineKeyboardMarkup) GetRows() []*InlineKeyboardRow {
@@ -653,7 +653,7 @@ type InlineKeyboardRow struct {
 
 func (x *InlineKeyboardRow) Reset() {
 	*x = InlineKeyboardRow{}
-	mi := &file_api_bot_bot_proto_msgTypes[9]
+	mi := &file_bot_bot_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -665,7 +665,7 @@ func (x *InlineKeyboardRow) String() string {
 func (*InlineKeyboardRow) ProtoMessage() {}
 
 func (x *InlineKeyboardRow) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[9]
+	mi := &file_bot_bot_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -678,7 +678,7 @@ func (x *InlineKeyboardRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineKeyboardRow.ProtoReflect.Descriptor instead.
 func (*InlineKeyboardRow) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{9}
+	return file_bot_bot_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *InlineKeyboardRow) GetButtons() []*InlineKeyboardButton {
@@ -700,7 +700,7 @@ type InlineKeyboardButton struct {
 
 func (x *InlineKeyboardButton) Reset() {
 	*x = InlineKeyboardButton{}
-	mi := &file_api_bot_bot_proto_msgTypes[10]
+	mi := &file_bot_bot_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -712,7 +712,7 @@ func (x *InlineKeyboardButton) String() string {
 func (*InlineKeyboardButton) ProtoMessage() {}
 
 func (x *InlineKeyboardButton) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[10]
+	mi := &file_bot_bot_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -725,7 +725,7 @@ func (x *InlineKeyboardButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineKeyboardButton.ProtoReflect.Descriptor instead.
 func (*InlineKeyboardButton) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{10}
+	return file_bot_bot_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *InlineKeyboardButton) GetText() string {
@@ -761,7 +761,7 @@ type ReplyKeyboardMarkup struct {
 
 func (x *ReplyKeyboardMarkup) Reset() {
 	*x = ReplyKeyboardMarkup{}
-	mi := &file_api_bot_bot_proto_msgTypes[11]
+	mi := &file_bot_bot_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -773,7 +773,7 @@ func (x *ReplyKeyboardMarkup) String() string {
 func (*ReplyKeyboardMarkup) ProtoMessage() {}
 
 func (x *ReplyKeyboardMarkup) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[11]
+	mi := &file_bot_bot_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -786,7 +786,7 @@ func (x *ReplyKeyboardMarkup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyKeyboardMarkup.ProtoReflect.Descriptor instead.
 func (*ReplyKeyboardMarkup) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{11}
+	return file_bot_bot_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ReplyKeyboardMarkup) GetRows() []*ReplyKeyboardRow {
@@ -820,7 +820,7 @@ type ReplyKeyboardRow struct {
 
 func (x *ReplyKeyboardRow) Reset() {
 	*x = ReplyKeyboardRow{}
-	mi := &file_api_bot_bot_proto_msgTypes[12]
+	mi := &file_bot_bot_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -832,7 +832,7 @@ func (x *ReplyKeyboardRow) String() string {
 func (*ReplyKeyboardRow) ProtoMessage() {}
 
 func (x *ReplyKeyboardRow) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[12]
+	mi := &file_bot_bot_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -845,7 +845,7 @@ func (x *ReplyKeyboardRow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyKeyboardRow.ProtoReflect.Descriptor instead.
 func (*ReplyKeyboardRow) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{12}
+	return file_bot_bot_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ReplyKeyboardRow) GetButtons() []*ReplyKeyboardButton {
@@ -865,7 +865,7 @@ type ReplyKeyboardButton struct {
 
 func (x *ReplyKeyboardButton) Reset() {
 	*x = ReplyKeyboardButton{}
-	mi := &file_api_bot_bot_proto_msgTypes[13]
+	mi := &file_bot_bot_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -877,7 +877,7 @@ func (x *ReplyKeyboardButton) String() string {
 func (*ReplyKeyboardButton) ProtoMessage() {}
 
 func (x *ReplyKeyboardButton) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[13]
+	mi := &file_bot_bot_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -890,7 +890,7 @@ func (x *ReplyKeyboardButton) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplyKeyboardButton.ProtoReflect.Descriptor instead.
 func (*ReplyKeyboardButton) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{13}
+	return file_bot_bot_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ReplyKeyboardButton) GetText() string {
@@ -912,7 +912,7 @@ type SendMessageRequest struct {
 
 func (x *SendMessageRequest) Reset() {
 	*x = SendMessageRequest{}
-	mi := &file_api_bot_bot_proto_msgTypes[14]
+	mi := &file_bot_bot_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -924,7 +924,7 @@ func (x *SendMessageRequest) String() string {
 func (*SendMessageRequest) ProtoMessage() {}
 
 func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[14]
+	mi := &file_bot_bot_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -937,7 +937,7 @@ func (x *SendMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageRequest.ProtoReflect.Descriptor instead.
 func (*SendMessageRequest) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{14}
+	return file_bot_bot_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SendMessageRequest) GetChatId() int64 {
@@ -972,7 +972,7 @@ type SendMessageResponse struct {
 
 func (x *SendMessageResponse) Reset() {
 	*x = SendMessageResponse{}
-	mi := &file_api_bot_bot_proto_msgTypes[15]
+	mi := &file_bot_bot_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -984,7 +984,7 @@ func (x *SendMessageResponse) String() string {
 func (*SendMessageResponse) ProtoMessage() {}
 
 func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_bot_bot_proto_msgTypes[15]
+	mi := &file_bot_bot_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -997,7 +997,7 @@ func (x *SendMessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendMessageResponse.ProtoReflect.Descriptor instead.
 func (*SendMessageResponse) Descriptor() ([]byte, []int) {
-	return file_api_bot_bot_proto_rawDescGZIP(), []int{15}
+	return file_bot_bot_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SendMessageResponse) GetSuccess() bool {
@@ -1014,11 +1014,11 @@ func (x *SendMessageResponse) GetError() string {
 	return ""
 }
 
-var File_api_bot_bot_proto protoreflect.FileDescriptor
+var File_bot_bot_proto protoreflect.FileDescriptor
 
-const file_api_bot_bot_proto_rawDesc = "" +
+const file_bot_bot_proto_rawDesc = "" +
 	"\n" +
-	"\x11api/bot/bot.proto\x12\x03bot\"\x8f\x01\n" +
+	"\rbot/bot.proto\x12\x03bot\"\x8f\x01\n" +
 	"\rUpdateRequest\x12\x1b\n" +
 	"\tupdate_id\x18\x01 \x01(\x03R\bupdateId\x12&\n" +
 	"\amessage\x18\x02 \x01(\v2\f.bot.MessageR\amessage\x129\n" +
@@ -1087,22 +1087,22 @@ const file_api_bot_bot_proto_rawDesc = "" +
 	"\n" +
 	"BotService\x128\n" +
 	"\rProcessUpdate\x12\x12.bot.UpdateRequest\x1a\x13.bot.UpdateResponse\x12@\n" +
-	"\vSendMessage\x12\x17.bot.SendMessageRequest\x1a\x18.bot.SendMessageResponseB)Z'bizhelper_v_1_20/global_models/grpc/botb\x06proto3"
+	"\vSendMessage\x12\x17.bot.SendMessageRequest\x1a\x18.bot.SendMessageResponseB#Z!biz_helper/global_models/grpc/botb\x06proto3"
 
 var (
-	file_api_bot_bot_proto_rawDescOnce sync.Once
-	file_api_bot_bot_proto_rawDescData []byte
+	file_bot_bot_proto_rawDescOnce sync.Once
+	file_bot_bot_proto_rawDescData []byte
 )
 
-func file_api_bot_bot_proto_rawDescGZIP() []byte {
-	file_api_bot_bot_proto_rawDescOnce.Do(func() {
-		file_api_bot_bot_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_bot_bot_proto_rawDesc), len(file_api_bot_bot_proto_rawDesc)))
+func file_bot_bot_proto_rawDescGZIP() []byte {
+	file_bot_bot_proto_rawDescOnce.Do(func() {
+		file_bot_bot_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_bot_bot_proto_rawDesc), len(file_bot_bot_proto_rawDesc)))
 	})
-	return file_api_bot_bot_proto_rawDescData
+	return file_bot_bot_proto_rawDescData
 }
 
-var file_api_bot_bot_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
-var file_api_bot_bot_proto_goTypes = []any{
+var file_bot_bot_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_bot_bot_proto_goTypes = []any{
 	(*UpdateRequest)(nil),        // 0: bot.UpdateRequest
 	(*Message)(nil),              // 1: bot.Message
 	(*CallbackQuery)(nil),        // 2: bot.CallbackQuery
@@ -1120,7 +1120,7 @@ var file_api_bot_bot_proto_goTypes = []any{
 	(*SendMessageRequest)(nil),   // 14: bot.SendMessageRequest
 	(*SendMessageResponse)(nil),  // 15: bot.SendMessageResponse
 }
-var file_api_bot_bot_proto_depIdxs = []int32{
+var file_bot_bot_proto_depIdxs = []int32{
 	1,  // 0: bot.UpdateRequest.message:type_name -> bot.Message
 	2,  // 1: bot.UpdateRequest.callback_query:type_name -> bot.CallbackQuery
 	3,  // 2: bot.Message.from:type_name -> bot.User
@@ -1145,12 +1145,12 @@ var file_api_bot_bot_proto_depIdxs = []int32{
 	0,  // [0:13] is the sub-list for field type_name
 }
 
-func init() { file_api_bot_bot_proto_init() }
-func file_api_bot_bot_proto_init() {
-	if File_api_bot_bot_proto != nil {
+func init() { file_bot_bot_proto_init() }
+func file_bot_bot_proto_init() {
+	if File_bot_bot_proto != nil {
 		return
 	}
-	file_api_bot_bot_proto_msgTypes[7].OneofWrappers = []any{
+	file_bot_bot_proto_msgTypes[7].OneofWrappers = []any{
 		(*ReplyMarkup_InlineKeyboard)(nil),
 		(*ReplyMarkup_ReplyKeyboard)(nil),
 	}
@@ -1158,17 +1158,17 @@ func file_api_bot_bot_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_bot_bot_proto_rawDesc), len(file_api_bot_bot_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_bot_bot_proto_rawDesc), len(file_bot_bot_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_bot_bot_proto_goTypes,
-		DependencyIndexes: file_api_bot_bot_proto_depIdxs,
-		MessageInfos:      file_api_bot_bot_proto_msgTypes,
+		GoTypes:           file_bot_bot_proto_goTypes,
+		DependencyIndexes: file_bot_bot_proto_depIdxs,
+		MessageInfos:      file_bot_bot_proto_msgTypes,
 	}.Build()
-	File_api_bot_bot_proto = out.File
-	file_api_bot_bot_proto_goTypes = nil
-	file_api_bot_bot_proto_depIdxs = nil
+	File_bot_bot_proto = out.File
+	file_bot_bot_proto_goTypes = nil
+	file_bot_bot_proto_depIdxs = nil
 }
