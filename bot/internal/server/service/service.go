@@ -5,6 +5,7 @@ import (
 	httpclient "bot/internal/server/http_client"
 	"context"
 	"fmt"
+	"log"
 
 	pb "global_models/grpc/bot"
 )
@@ -27,6 +28,7 @@ func NewBotService(grpcClient *grpcclient.BotGrpcClient, tgClient *httpclient.Bo
 func (b *BotService) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	resp, err := b.grpcClient.ProcessUpdate(ctx, req)
 	if err != nil {
+		log.Printf("Ошибка от GRPC сервера: %v\n", err)
 		return nil, fmt.Errorf("Ошибка связи с gRPC сервером")
 	}
 

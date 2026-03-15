@@ -96,6 +96,11 @@ func (a *BotGateway) SetUpPollingRoutes() error {
 
 // метод для связывания сообщения от Telegram с бизнес-логикой через Handler
 func (a *BotGateway) registerBotHandlers() {
+	// Обработка callback-запросов от inline клавиатур
+	a.telegramBot.Handle(tele.OnCallback, func(c tele.Context) error {
+		return a.Handler.HandleBotCallback(c)
+	})
+
 	// Обработка команды /start
 	a.telegramBot.Handle("/start", func(c tele.Context) error {
 		// Передаём управление в ваш handler
@@ -107,10 +112,6 @@ func (a *BotGateway) registerBotHandlers() {
 		return a.Handler.HandleBotMessage(c)
 	})
 
-	// Обработка callback-запросов от inline клавиатур
-	a.telegramBot.Handle(tele.OnCallback, func(c tele.Context) error {
-		return a.Handler.HandleBotCallback(c)
-	})
 }
 
 // метод для запуска polling бота
