@@ -29,6 +29,10 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	// Приводим входящее сообщение к domain типу, используем конвертер
 	incomingMsg := converter.ToDomainMessage(msg)
 
+	// Добавим подробное логирование для отладки
+	log.Printf("🔍 ProcessMessage получил:, UserID=%d, ChatID=%d, MessageID=%d, Text=%s",
+		msg.UserId, msg.ChatId, msg.MessageId, msg.Text)
+
 	// Сохранаяем сообщение в БД через сервисный слой
 	err := b.Service.CheckAndSaveMsg(ctx, incomingMsg)
 	if err != nil {

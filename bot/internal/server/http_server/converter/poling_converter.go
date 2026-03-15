@@ -2,6 +2,7 @@ package converter
 
 import (
 	"bot/internal/domain"
+	"fmt"
 
 	tele "gopkg.in/telebot.v4"
 )
@@ -9,15 +10,17 @@ import (
 // конвертируем информацию из контеста сообщения от бота при poling режиме, приводим к доменному типу
 func ConvertToUpdate(ctx tele.Context) (*domain.TelegramUpdate, error) {
 	update := &domain.TelegramUpdate{
-		UpdateID: int64(ctx.Update().ID), // получаем ID обновления
+		UpdateID: int64(ctx.Update().ID),
 	}
 
-	// Определяем тип обновления и заполняем соответствующие поля
+	// ВАЖНО: Сначала проверяем callback!
 	switch {
-	case ctx.Message() != nil: // Это обычное сообщение
-		fillMessage(update, ctx)
-	case ctx.Callback() != nil: // Это callback от inline кнопки
+	case ctx.Callback() != nil: // 1️⃣ Сначала проверяем callback
 		fillCallback(update, ctx)
+	case ctx.Message() != nil: // 2️⃣ Потом обычные сообщения
+		fillMessage(update, ctx)
+	default:
+		return nil, fmt.Errorf("неподдерживаемый тип обновления")
 	}
 
 	return update, nil

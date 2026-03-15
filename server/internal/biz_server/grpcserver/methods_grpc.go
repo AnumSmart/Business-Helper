@@ -19,6 +19,14 @@ import (
 // - ответ боту (что нужно сделать: отправить сообщение, показать кнопки и т.д.)
 // - ошибку, если что-то пошло не так
 func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	// Проверяем, не отменён ли контекст
+	select {
+	case <-ctx.Done():
+		log.Printf("❌ Контекст отменён до начала обработки: %v", ctx.Err())
+		return nil, ctx.Err()
+	default:
+	}
+
 	// Логируем факт получения обновления
 	// UpdateId - это как номер обращения в техподдержку
 	log.Printf("Processing update %d", req.UpdateId)
@@ -31,6 +39,7 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 
 	// ШАГ 1: Обрабатываем сообщение от пользователя (если оно есть)
 	// Например, пользователь написал "Привет!" или прислал фото
+	log.Printf("-----Состояние сообщения: %v-----'\n", req.Message)
 	if req.Message != nil {
 		// Вызываем специалиста по сообщениям (ProcessMessage)
 		// Передаем ему само сообщение для анализа
@@ -48,6 +57,7 @@ func (s *GRPCServer) ProcessUpdate(ctx context.Context, req *pb.UpdateRequest) (
 		}
 	}
 
+	log.Printf("-----Состояние колбэка: %v-----'\n", req.CallbackQuery)
 	// ШАГ 2: Обрабатываем нажатие на кнопку (если оно есть)
 	// Например, пользователь нажал кнопку "Узнать цену"
 	if req.CallbackQuery != nil {
