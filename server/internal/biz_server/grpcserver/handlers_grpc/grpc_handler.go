@@ -52,7 +52,7 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 		UserID:    msg.UserId,
 		Text:      replyText,
 		Direction: "outgoing",
-		Timestamp: time.Now(),
+		TimeStamp: time.Now(),
 	}
 
 	// Сохранаяем сообщение в БД через сервисный слой

@@ -1,1 +1,5 @@
 .env
+
+# Игнорировать миграции в любом модуле
+*/migrations/
+server/migrations/

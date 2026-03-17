@@ -11,3 +11,5 @@ server/migrations/
 # Игнорировать Commands.md в любом модуле
 */Commands.md
 server/Commands.md
+
+goose_cmd.md

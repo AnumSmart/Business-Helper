@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"server/internal/domain"
@@ -40,6 +39,16 @@ func (r *BizRepository) Echo() string {
 
 // сохраняет или обновляет данные в таблице meesges
 func (r *BizRepository) Save(ctx context.Context, message *domain.Message) error {
+	// Определяем является ли сообщение командой
+	isCommand := false
+	commandName := ""
+	if len(message.Text) > 0 && message.Text[0] == '/' {
+		isCommand = true
+		parts := strings.Split(message.Text, " ")
+		commandName = parts[0]
+	}
+
+	// Сохраняем сообщение
 	query := `
         INSERT INTO messages (
             telegram_message_id, telegram_chat_id, telegram_user_id,
@@ -53,21 +62,12 @@ func (r *BizRepository) Save(ctx context.Context, message *domain.Message) error
         RETURNING id
     `
 
-	isCommand := false
-	commandName := ""
-	if len(message.Text) > 0 && message.Text[0] == '/' {
-		isCommand = true
-		// Простое извлечение команды (можно улучшить)
-		parts := strings.Split(message.Text, " ")
-		commandName = parts[0]
-	}
-
 	var id int64
 	err := r.DBRepo.Pool.QueryRow(ctx, query,
 		message.MessageID, message.ChatID, message.UserID,
 		message.Text, message.Direction, message.Status,
 		isCommand, commandName,
-		message.Timestamp, message.Timestamp,
+		message.CreatedAt, message.CreatedAt, // created_at и updated_at
 	).Scan(&id)
 
 	if err != nil {
@@ -88,7 +88,7 @@ func (r *BizRepository) SaveCallback(ctx context.Context, callback *domain.Callb
 	defer tx.Rollback(ctx)
 
 	// Находим связанное сообщение (опционально)
-	var messageID sql.NullInt64
+	var messageID *int64
 	err = tx.QueryRow(ctx, `
         SELECT id FROM messages 
         WHERE telegram_chat_id = $1 AND telegram_message_id = $2
