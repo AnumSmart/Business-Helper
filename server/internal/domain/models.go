@@ -4,14 +4,18 @@ import "time"
 
 // Внутренние структуры для БД (не protobuf)
 type Message struct {
-	ID        int64
-	MessageID int64
-	ChatID    int64
-	UserID    int64
-	Text      string
-	Direction string // "incoming" или "outgoing"
-	Status    string // "sent", "pending", "failed"
-	Timestamp time.Time
+	ID          int64     `db:"id"`
+	MessageID   int64     `db:"telegram_message_id"`
+	ChatID      int64     `db:"telegram_chat_id"`
+	UserID      int64     `db:"telegram_user_id"`
+	Text        string    `db:"text"`
+	Direction   string    `db:"direction"` // "incoming" или "outgoing"
+	Status      string    `db:"status"`    // "sent", "delivered", "read", "failed", "pending"
+	IsCommand   bool      `db:"is_command"`
+	CommandName string    `db:"command_name"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
+	TimeStamp   time.Time
 }
 
 type CallbackLog struct {

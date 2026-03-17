@@ -93,7 +93,7 @@ func ToDomainMessage(pbMsg *pb.Message) *domain.Message {
 		Text:      pbMsg.Text,               // Текст сообщения
 		Direction: "incoming",               // Это входящее сообщение (к нам пришло)
 		Status:    "received",               // Статус: получено, но еще не обработано
-		Timestamp: time.Unix(pbMsg.Date, 0), // Когда написали (переводим из Unix-времени)
+		TimeStamp: time.Unix(pbMsg.Date, 0), // Когда написали (переводим из Unix-времени)
 		// ID не заполняем - его присвоит база данных при сохранении
 	}
 }
