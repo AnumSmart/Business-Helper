@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"server/internal/domain"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/jackc/pgx/v4"
 )
+
+var ErrUserNotFound = errors.New("user not found")
 
 // описание структуры слоя репозитория
 type BizRepository struct {
@@ -64,10 +67,16 @@ func (r *BizRepository) Save(ctx context.Context, message *domain.Message) error
 
 	var id int64
 	err := r.DBRepo.Pool.QueryRow(ctx, query,
-		message.MessageID, message.ChatID, message.UserID,
-		message.Text, message.Direction, message.Status,
-		isCommand, commandName,
-		message.CreatedAt, message.CreatedAt, // created_at и updated_at
+		message.MessageID,
+		message.ChatID,
+		message.UserID,
+		message.Text,
+		message.Direction,
+		message.Status,
+		isCommand,
+		commandName,
+		message.CreatedAt,
+		message.CreatedAt, // created_at и updated_at
 	).Scan(&id)
 
 	if err != nil {
@@ -130,4 +139,116 @@ func (r *BizRepository) SaveCallback(ctx context.Context, callback *domain.Callb
 
 	callback.ID = id
 	return nil
+}
+
+// метод для создания и сохранения пользователя в базу
+func (r *BizRepository) CreateUser(ctx context.Context, user *domain.User) error {
+	query := `
+        INSERT INTO users (
+            telegram_id, username, first_name, last_name, 
+            is_active, created_at, last_seen_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `
+
+	err := r.DBRepo.Pool.QueryRow(ctx, query,
+		user.TelegramID,
+		nullString(user.Username),
+		user.FirstName,
+		nullString(user.LastName),
+		user.IsActive,
+		user.CreatedAt,
+		user.LastSeenAt,
+	).Scan(&user.ID)
+
+	if err != nil {
+		return fmt.Errorf("failed to create user: %w", err)
+	}
+
+	return nil
+}
+
+// метод для обновления пользователя в базе (вдруг данные в телеграмме поменялись)
+func (r *BizRepository) Update(ctx context.Context, user *domain.User) error {
+	query := `
+        UPDATE users SET
+            username = $2,
+            first_name = $3,
+            last_name = $4,
+            is_active = $5,
+            last_seen_at = $6
+        WHERE telegram_id = $1
+        RETURNING id
+    `
+
+	err := r.DBRepo.Pool.QueryRow(ctx, query,
+		user.TelegramID,
+		nullString(user.Username),
+		user.FirstName,
+		nullString(user.LastName),
+		user.IsActive,
+		user.LastSeenAt,
+	).Scan(&user.ID)
+
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+
+	return nil
+}
+
+// метод для поиска пользователя по ID из телеграмма
+func (r *BizRepository) GetUserByTelegramID(ctx context.Context, telegramID int64) (*domain.User, error) {
+	query := `
+        SELECT id, telegram_id, username, first_name, last_name,
+               is_active, created_at, last_seen_at
+        FROM users
+        WHERE telegram_id = $1
+    `
+
+	user := &domain.User{}
+	var username, lastName sql.NullString
+
+	err := r.DBRepo.Pool.QueryRow(ctx, query, telegramID).Scan(
+		&user.ID,
+		&user.TelegramID,
+		&username,
+		&user.FirstName,
+		&lastName,
+		&user.IsActive,
+		&user.CreatedAt,
+		&user.LastSeenAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	user.Username = username.String
+	user.LastName = lastName.String
+
+	return user, nil
+}
+
+// метод обновления времени последнего посещения пользователем по ID из телеграмм
+func (r *BizRepository) UpdateLastSeen(ctx context.Context, telegramID int64) error {
+	query := `UPDATE users SET last_seen_at = NOW() WHERE telegram_id = $1`
+
+	_, err := r.DBRepo.Pool.Exec(ctx, query, telegramID)
+	if err != nil {
+		return fmt.Errorf("failed to update last_seen: %w", err)
+	}
+
+	return nil
+}
+
+// Вспомогательная функция
+func nullString(s string) sql.NullString {
+	if s == "" {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{String: s, Valid: true}
 }

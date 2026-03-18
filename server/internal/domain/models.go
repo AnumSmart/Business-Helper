@@ -64,10 +64,14 @@ type MessageResponse struct {
 }
 
 // User - внутренняя модель пользователя Telegram
-// Не зависит от protobuf, используется во всем сервисном слое
+// Полностью соответствует таблице users из миграции
 type User struct {
-	ID        int64  // Уникальный ID пользователя в Telegram
-	FirstName string // Имя
-	LastName  string // Фамилия (может быть пустой)
-	Username  string // Username (может быть пустым, без @)
+	ID         int64     // Внутренний ID в БД (BIGSERIAL)
+	TelegramID int64     // Telegram ID (уникальный)
+	Username   string    // Username (может быть пустым, без @)
+	FirstName  string    // Имя
+	LastName   string    // Фамилия (может быть пустой)
+	IsActive   bool      // Активен ли пользователь
+	CreatedAt  time.Time // Когда впервые появился
+	LastSeenAt time.Time // Последняя активность
 }
