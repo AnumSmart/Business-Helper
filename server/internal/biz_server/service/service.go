@@ -6,6 +6,7 @@ import (
 	"server/internal/biz_server/grpcclient"
 	"server/internal/biz_server/repository"
 	"server/internal/domain"
+	"time"
 )
 
 // описание интерфейса сервисного слоя для HTTP сервера
@@ -23,6 +24,9 @@ type ServiceForGRPCHandler interface {
 	CreateTestKeyboard() *domain.ReplyMarkup
 	CreateWelcomeReplyKeyboard() *domain.ReplyMarkup
 	AnswerIncomingMsg(ctx context.Context, req *domain.IncomingMessage) (*domain.MessageResponse, error)
+	// RegisterOrUpdate - регистрирует нового или обновляет существующего пользователя
+	// Вызывается при каждом обращении к боту
+	RegisterOrUpdate(ctx context.Context, telegramID int64, firstName, lastName, username string) (*domain.User, error)
 }
 
 // описание структуры сервисного слоя
@@ -78,7 +82,7 @@ func (s *BizService) GenerateReply(text string, user *domain.User) string {
 	}
 
 	if text == "/help" {
-		return "Доступные команды:\n/start - начало работы\n/help - помощь"
+		return "Этот бот создан, чтобы облегчить вам жизнь"
 	}
 
 	// Приветствие с именем пользователя
@@ -146,4 +150,84 @@ func (s *BizService) AnswerIncomingMsg(ctx context.Context, req *domain.Incoming
 	return &domain.MessageResponse{
 		Success: true,
 	}, nil
+}
+
+// метод для регистрации или обновления текущего пользователя
+func (s *BizService) RegisterOrUpdate(ctx context.Context, telegramID int64, firstName, lastName, username string) (*domain.User, error) {
+	// Проверяем, существует ли пользователь
+	user, err := s.repo.GetUserByTelegramID(ctx, telegramID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check user existence: %w", err)
+	}
+
+	now := time.Now()
+
+	if user == nil {
+		// Создаём нового пользователя
+		user = &domain.User{
+			TelegramID: telegramID,
+			FirstName:  firstName,
+			LastName:   lastName,
+			Username:   username,
+			IsActive:   true,
+			CreatedAt:  now,
+			LastSeenAt: now,
+		}
+
+		if err := s.repo.CreateUser(ctx, user); err != nil {
+			return nil, fmt.Errorf("failed to create user: %w", err)
+		}
+
+		// Можно залогировать нового пользователя
+		fmt.Printf("🎉 New user registered: %d (@%s)\n", telegramID, username)
+	} else {
+		// Обновляем только если данные изменились
+		needsUpdate := false
+
+		if user.FirstName != firstName {
+			user.FirstName = firstName
+			needsUpdate = true
+		}
+		if user.LastName != lastName {
+			user.LastName = lastName
+			needsUpdate = true
+		}
+		if user.Username != username {
+			user.Username = username
+			needsUpdate = true
+		}
+
+		// Всегда обновляем время активности
+		user.LastSeenAt = now
+
+		if needsUpdate {
+			if err := s.repo.Update(ctx, user); err != nil {
+				return nil, fmt.Errorf("failed to update user: %w", err)
+			}
+		} else {
+			// Только обновляем last_seen
+			if err := s.repo.UpdateLastSeen(ctx, telegramID); err != nil {
+				return nil, fmt.Errorf("failed to update last_seen: %w", err)
+			}
+		}
+	}
+
+	return user, nil
+}
+
+// GetByTelegramID - получение пользователя
+func (s *BizService) GetByTelegramID(ctx context.Context, telegramID int64) (*domain.User, error) {
+	user, err := s.repo.GetUserByTelegramID(ctx, telegramID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
+}
+
+// UpdateActivity - быстрое обновление только времени активности
+func (s *BizService) UpdateActivity(ctx context.Context, telegramID int64) error {
+	if err := s.repo.UpdateLastSeen(ctx, telegramID); err != nil {
+		return fmt.Errorf("failed to update activity: %w", err)
+	}
+	return nil
 }
