@@ -13,3 +13,5 @@ server/migrations/
 server/Commands.md
 
 goose_cmd.md
+api/generate.md
+*/bot/protoc.md

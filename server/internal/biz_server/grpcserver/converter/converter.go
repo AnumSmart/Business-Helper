@@ -65,12 +65,15 @@ func ToProtoResponse(resp *domain.MessageResponse) *pb.SendMessageResponse {
 // Поле ID оставляем пустым - его потом база данных сама присвоит
 func ToCallbackLog(callback *pb.CallbackQuery) *domain.CallbackLog {
 	return &domain.CallbackLog{
-		CallbackID: callback.Id,
-		UserID:     callback.UserId,    // прямое поле, не callback.From.ID
-		MessageID:  callback.MessageId, // прямое поле, не callback.Message.ID
-		ChatID:     callback.ChatId,    // прямое поле, не callback.Message.Chat.ID
-		Data:       callback.Data,
-		Timestamp:  time.Now(),
+		CallbackID:    callback.Id,
+		UserID:        callback.UserId,         // прямое поле, не callback.From.ID
+		UserNickName:  callback.From.Username,  // Ник пользователя
+		UserFirstName: callback.From.FirstName, // Имя пользователя
+		UserLastName:  callback.From.LastName,  // Фамилия протзователя
+		MessageID:     callback.MessageId,      // прямое поле, не callback.Message.ID
+		ChatID:        callback.ChatId,         // прямое поле, не callback.Message.Chat.ID
+		Data:          callback.Data,
+		Timestamp:     time.Now(),
 	}
 }
 
@@ -87,13 +90,16 @@ func ToDomainMessage(pbMsg *pb.Message) *domain.Message {
 
 	// Создаем запись в вашем внутреннем формате
 	return &domain.Message{
-		MessageID: pbMsg.MessageId,          // ID сообщения в Telegram (как номер чека)
-		ChatID:    pbMsg.ChatId,             // ID чата (как номер комнаты)
-		UserID:    pbMsg.UserId,             // ID пользователя (кто написал)
-		Text:      pbMsg.Text,               // Текст сообщения
-		Direction: "incoming",               // Это входящее сообщение (к нам пришло)
-		Status:    "received",               // Статус: получено, но еще не обработано
-		TimeStamp: time.Unix(pbMsg.Date, 0), // Когда написали (переводим из Unix-времени)
+		MessageID:     pbMsg.MessageId,          // ID сообщения в Telegram (как номер чека)
+		ChatID:        pbMsg.ChatId,             // ID чата (как номер комнаты)
+		UserID:        pbMsg.UserId,             // ID пользователя (кто написал)
+		UserNickName:  pbMsg.From.Username,      // Ник пользователя
+		UserFirstName: pbMsg.From.FirstName,     // Имя пользователя
+		UserLastName:  pbMsg.From.LastName,      // Фамилия протзователя
+		Text:          pbMsg.Text,               // Текст сообщения
+		Direction:     "incoming",               // Это входящее сообщение (к нам пришло)
+		Status:        "received",               // Статус: получено, но еще не обработано
+		TimeStamp:     time.Unix(pbMsg.Date, 0), // Когда написали (переводим из Unix-времени)
 		// ID не заполняем - его присвоит база данных при сохранении
 	}
 }
@@ -103,19 +109,20 @@ func ToDomainMessage(pbMsg *pb.Message) *domain.Message {
 // Telegram прислал нам пользователя в формате protobuf (pb.User),
 // а мы хотим работать с ним в сервисном слое в формате domain.User
 func ToDomainUser(pbUser *pb.User) *domain.User {
-	// Если пользователя нет - возвращаем nil
 	if pbUser == nil {
 		return nil
 	}
 
-	// Переводим с "внешнего" языка на "внутренний"
-	return &domain.User{
-		ID:        pbUser.Id,
-		FirstName: pbUser.FirstName,
-		LastName:  pbUser.LastName,
-		Username:  pbUser.Username,
-		// Дополнительные поля можно добавить позже
+	user := &domain.User{
+		TelegramID: pbUser.Id,
+		FirstName:  pbUser.FirstName,
+		LastName:   pbUser.LastName,
+		Username:   pbUser.Username,
+		IsActive:   true,
+		// CreatedAt и LastSeenAt установятся при сохранении
 	}
+
+	return user
 }
 
 // ToProtoUser - обратный переводчик (если нужно отправить пользователя обратно)
