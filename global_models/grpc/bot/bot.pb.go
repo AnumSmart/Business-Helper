@@ -192,6 +192,7 @@ type CallbackQuery struct {
 	MessageId     int64                  `protobuf:"varint,3,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"` // ID сообщения с клавиатурой
 	ChatId        int64                  `protobuf:"varint,4,opt,name=chat_id,json=chatId,proto3" json:"chat_id,omitempty"`          // ID чата, где находится сообщение
 	Data          string                 `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`                             // Данные, связанные с кнопкой (callback_data)
+	From          *User                  `protobuf:"bytes,6,opt,name=from,proto3" json:"from,omitempty"`                             // ПОЛНАЯ информация об отправителе (username, first_name, last_name)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -259,6 +260,13 @@ func (x *CallbackQuery) GetData() string {
 		return x.Data
 	}
 	return ""
+}
+
+func (x *CallbackQuery) GetFrom() *User {
+	if x != nil {
+		return x.From
+	}
+	return nil
 }
 
 // Информация о пользователе Telegram
@@ -1031,14 +1039,15 @@ const file_bot_bot_proto_rawDesc = "" +
 	"\x04text\x18\x04 \x01(\tR\x04text\x12\x12\n" +
 	"\x04date\x18\x05 \x01(\x03R\x04date\x12\x1d\n" +
 	"\x04from\x18\x06 \x01(\v2\t.bot.UserR\x04from\x12\x1d\n" +
-	"\x04chat\x18\a \x01(\v2\t.bot.ChatR\x04chat\"\x84\x01\n" +
+	"\x04chat\x18\a \x01(\v2\t.bot.ChatR\x04chat\"\xa3\x01\n" +
 	"\rCallbackQuery\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x03 \x01(\x03R\tmessageId\x12\x17\n" +
 	"\achat_id\x18\x04 \x01(\x03R\x06chatId\x12\x12\n" +
-	"\x04data\x18\x05 \x01(\tR\x04data\"n\n" +
+	"\x04data\x18\x05 \x01(\tR\x04data\x12\x1d\n" +
+	"\x04from\x18\x06 \x01(\v2\t.bot.UserR\x04from\"n\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -1087,7 +1096,7 @@ const file_bot_bot_proto_rawDesc = "" +
 	"\n" +
 	"BotService\x128\n" +
 	"\rProcessUpdate\x12\x12.bot.UpdateRequest\x1a\x13.bot.UpdateResponse\x12@\n" +
-	"\vSendMessage\x12\x17.bot.SendMessageRequest\x1a\x18.bot.SendMessageResponseB#Z!biz_helper/global_models/grpc/botb\x06proto3"
+	"\vSendMessage\x12\x17.bot.SendMessageRequest\x1a\x18.bot.SendMessageResponseB)Z'bizhelper_v_1_20/global_models/grpc/botb\x06proto3"
 
 var (
 	file_bot_bot_proto_rawDescOnce sync.Once
@@ -1125,24 +1134,25 @@ var file_bot_bot_proto_depIdxs = []int32{
 	2,  // 1: bot.UpdateRequest.callback_query:type_name -> bot.CallbackQuery
 	3,  // 2: bot.Message.from:type_name -> bot.User
 	4,  // 3: bot.Message.chat:type_name -> bot.Chat
-	6,  // 4: bot.UpdateResponse.messages:type_name -> bot.OutgoingMessage
-	7,  // 5: bot.OutgoingMessage.reply_markup:type_name -> bot.ReplyMarkup
-	8,  // 6: bot.ReplyMarkup.inline_keyboard:type_name -> bot.InlineKeyboardMarkup
-	11, // 7: bot.ReplyMarkup.reply_keyboard:type_name -> bot.ReplyKeyboardMarkup
-	9,  // 8: bot.InlineKeyboardMarkup.rows:type_name -> bot.InlineKeyboardRow
-	10, // 9: bot.InlineKeyboardRow.buttons:type_name -> bot.InlineKeyboardButton
-	12, // 10: bot.ReplyKeyboardMarkup.rows:type_name -> bot.ReplyKeyboardRow
-	13, // 11: bot.ReplyKeyboardRow.buttons:type_name -> bot.ReplyKeyboardButton
-	7,  // 12: bot.SendMessageRequest.reply_markup:type_name -> bot.ReplyMarkup
-	0,  // 13: bot.BotService.ProcessUpdate:input_type -> bot.UpdateRequest
-	14, // 14: bot.BotService.SendMessage:input_type -> bot.SendMessageRequest
-	5,  // 15: bot.BotService.ProcessUpdate:output_type -> bot.UpdateResponse
-	15, // 16: bot.BotService.SendMessage:output_type -> bot.SendMessageResponse
-	15, // [15:17] is the sub-list for method output_type
-	13, // [13:15] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	3,  // 4: bot.CallbackQuery.from:type_name -> bot.User
+	6,  // 5: bot.UpdateResponse.messages:type_name -> bot.OutgoingMessage
+	7,  // 6: bot.OutgoingMessage.reply_markup:type_name -> bot.ReplyMarkup
+	8,  // 7: bot.ReplyMarkup.inline_keyboard:type_name -> bot.InlineKeyboardMarkup
+	11, // 8: bot.ReplyMarkup.reply_keyboard:type_name -> bot.ReplyKeyboardMarkup
+	9,  // 9: bot.InlineKeyboardMarkup.rows:type_name -> bot.InlineKeyboardRow
+	10, // 10: bot.InlineKeyboardRow.buttons:type_name -> bot.InlineKeyboardButton
+	12, // 11: bot.ReplyKeyboardMarkup.rows:type_name -> bot.ReplyKeyboardRow
+	13, // 12: bot.ReplyKeyboardRow.buttons:type_name -> bot.ReplyKeyboardButton
+	7,  // 13: bot.SendMessageRequest.reply_markup:type_name -> bot.ReplyMarkup
+	0,  // 14: bot.BotService.ProcessUpdate:input_type -> bot.UpdateRequest
+	14, // 15: bot.BotService.SendMessage:input_type -> bot.SendMessageRequest
+	5,  // 16: bot.BotService.ProcessUpdate:output_type -> bot.UpdateResponse
+	15, // 17: bot.BotService.SendMessage:output_type -> bot.SendMessageResponse
+	16, // [16:18] is the sub-list for method output_type
+	14, // [14:16] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_bot_bot_proto_init() }

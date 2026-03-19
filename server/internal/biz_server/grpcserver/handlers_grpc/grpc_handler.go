@@ -33,15 +33,21 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	log.Printf("🔍 ProcessMessage получил:, UserID=%d, ChatID=%d, MessageID=%d, Text=%s",
 		msg.UserId, msg.ChatId, msg.MessageId, msg.Text)
 
+	// при вызове этого метода необходимо сохранить нового пользователя в базе или обновить некоторые его поля
+	user, err := b.Service.RegisterOrUpdate(ctx, incomingMsg.MessageID, incomingMsg.UserFirstName, incomingMsg.UserLastName, incomingMsg.UserNickName)
+	if err != nil {
+		log.Printf("failed to save/update user: %v", err)
+	}
+
 	// Сохранаяем сообщение в БД через сервисный слой
-	err := b.Service.CheckAndSaveMsg(ctx, incomingMsg)
+	err = b.Service.CheckAndSaveMsg(ctx, incomingMsg)
 	if err != nil {
 		log.Printf("failed to save incoming message: %v", err)
 		//return nil, fmt.Errorf("failed to save incoming message: %w", err)
 	}
 
 	// конвертируем пользователя из proto сообщения в доменную модель
-	user := converter.ToDomainUser(msg.From)
+	user = converter.ToDomainUser(msg.From)
 
 	// генерируем ответ на текстовое сообщение в сервисном слое
 	replyText := b.Service.GenerateReply(incomingMsg.Text, user)
@@ -90,8 +96,17 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 	// Приводим входящий callback к domain типу, используем конвертер
 	callBackLog := converter.ToCallbackLog(callback)
 
+	// при вызове этого метода необходимо сохранить нового пользователя в базе или обновить некоторые его поля
+	user, err := b.Service.RegisterOrUpdate(ctx, callBackLog.MessageID, callBackLog.UserFirstName, callBackLog.UserLastName, callBackLog.UserNickName)
+	if err != nil {
+		log.Printf("failed to save/update user: %v", err)
+	}
+
+	// логируем, что пользователь нажал на кнопку
+	log.Printf("Пользователь %s нажал на кнопку, началась обработка колбэка %v \n", user.Username, callBackLog.ID)
+
 	// проверяем и сохраняем данные в БД
-	err := b.Service.CheckAndSaveCallBack(ctx, callBackLog)
+	err = b.Service.CheckAndSaveCallBack(ctx, callBackLog)
 	if err != nil {
 		log.Printf("⚠️ failed to save callback: %v", err) // логируем, но не прерываем
 	}

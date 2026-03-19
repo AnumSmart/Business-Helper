@@ -39,7 +39,7 @@ type BotServiceClient interface {
 	// ProcessUpdate - обрабатывает обновления от Telegram (новые сообщения, колбэки)
 	// Принимает UpdateRequest и возвращает UpdateResponse
 	ProcessUpdate(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
-	// SendMessage - отправляет сообщение от бота пользователю
+	// SendMessage - отправляет сообщение от grpc клиента на пкзс сервер
 	// Принимает SendMessageRequest и возвращает SendMessageResponse
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 }
@@ -82,7 +82,7 @@ type BotServiceServer interface {
 	// ProcessUpdate - обрабатывает обновления от Telegram (новые сообщения, колбэки)
 	// Принимает UpdateRequest и возвращает UpdateResponse
 	ProcessUpdate(context.Context, *UpdateRequest) (*UpdateResponse, error)
-	// SendMessage - отправляет сообщение от бота пользователю
+	// SendMessage - отправляет сообщение от grpc клиента на пкзс сервер
 	// Принимает SendMessageRequest и возвращает SendMessageResponse
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	mustEmbedUnimplementedBotServiceServer()
