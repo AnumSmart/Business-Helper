@@ -221,7 +221,8 @@ func (r *BizRepository) GetUserByTelegramID(ctx context.Context, telegramID int6
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		// Проверяем, содержит ли ошибка "no rows in result set"
+		if err.Error() == sql.ErrNoRows.Error() || strings.Contains(err.Error(), "no rows") {
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)

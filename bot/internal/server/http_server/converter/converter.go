@@ -40,6 +40,10 @@ func ConvertToGRPCUpdate(update *domain.TelegramUpdate) *pb.UpdateRequest {
 			MessageId: update.CallbackQuery.Message.MessageID,
 			ChatId:    update.CallbackQuery.Message.Chat.ID,
 			Data:      update.CallbackQuery.Data,
+			From: &pb.User{
+				Id:       update.CallbackQuery.From.ID,
+				Username: update.CallbackQuery.From.Username,
+			},
 		}
 	}
 
