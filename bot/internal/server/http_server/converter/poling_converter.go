@@ -7,17 +7,16 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-// конвертируем информацию из контеста сообщения от бота при poling режиме, приводим к доменному типу
+// ConvertToUpdate конвертирует контекст телебота в доменную структуру TelegramUpdate
 func ConvertToUpdate(ctx tele.Context) (*domain.TelegramUpdate, error) {
 	update := &domain.TelegramUpdate{
 		UpdateID: int64(ctx.Update().ID),
 	}
 
-	// ВАЖНО: Сначала проверяем callback!
 	switch {
-	case ctx.Callback() != nil: // 1️⃣ Сначала проверяем callback
+	case ctx.Callback() != nil:
 		fillCallback(update, ctx)
-	case ctx.Message() != nil: // 2️⃣ Потом обычные сообщения
+	case ctx.Message() != nil:
 		fillMessage(update, ctx)
 	default:
 		return nil, fmt.Errorf("неподдерживаемый тип обновления")
@@ -26,22 +25,14 @@ func ConvertToUpdate(ctx tele.Context) (*domain.TelegramUpdate, error) {
 	return update, nil
 }
 
-// вспомогательная функция заполнения при конвертации, если это сообщение
+// fillMessage заполняет структуру сообщения
 func fillMessage(update *domain.TelegramUpdate, ctx tele.Context) {
 	msg := ctx.Message()
+	if msg == nil {
+		return
+	}
 
-	update.Message = &struct {
-		MessageID int64 `json:"message_id"`
-		From      struct {
-			ID       int64  `json:"id"`
-			Username string `json:"username"`
-		} `json:"from"`
-		Chat struct {
-			ID int64 `json:"id"`
-		} `json:"chat"`
-		Date int64  `json:"date"`
-		Text string `json:"text"`
-	}{
+	update.Message = &domain.Message{
 		MessageID: int64(msg.ID),
 		Date:      int64(msg.Unixtime),
 		Text:      msg.Text,
@@ -49,47 +40,50 @@ func fillMessage(update *domain.TelegramUpdate, ctx tele.Context) {
 
 	// Заполняем информацию об отправителе
 	if msg.Sender != nil {
-		update.Message.From.ID = msg.Sender.ID
-		update.Message.From.Username = msg.Sender.Username
+		update.Message.From = domain.User{
+			ID:       msg.Sender.ID,
+			Username: msg.Sender.Username,
+		}
 	}
 
 	// Заполняем информацию о чате
 	if msg.Chat != nil {
-		update.Message.Chat.ID = msg.Chat.ID
+		update.Message.Chat = domain.Chat{
+			ID: msg.Chat.ID,
+		}
 	}
 }
 
-// вспомогательная функция заполнения при конвертации, если это сколбэк от inline клавиатуры
+// fillCallback заполняет структуру callback запроса
 func fillCallback(update *domain.TelegramUpdate, ctx tele.Context) {
 	callback := ctx.Callback()
+	if callback == nil {
+		return
+	}
 
-	update.CallbackQuery = &struct {
-		ID   string   `json:"id"`
-		From struct { // ← это поле From нужно для UserId
-			ID int64 `json:"id"`
-		} `json:"from"`
-		Message struct { // ← это поле Message нужно для MessageId и ChatId
-			MessageID int64 `json:"message_id"`
-			Chat      struct {
-				ID int64 `json:"id"`
-			} `json:"chat"`
-		} `json:"message"`
-		Data string `json:"data"`
-	}{
+	update.CallbackQuery = &domain.CallbackQuery{
 		ID:   callback.ID,
 		Data: callback.Data,
 	}
 
 	// Заполняем информацию об отправителе
 	if callback.Sender != nil {
-		update.CallbackQuery.From.ID = callback.Sender.ID // ← это пойдет в UserId
+		update.CallbackQuery.From = domain.User{
+			ID:       callback.Sender.ID,
+			Username: callback.Sender.Username,
+		}
 	}
 
-	// Заполняем информацию о сообщении и чате
+	// Заполняем информацию о сообщении
 	if callback.Message != nil {
-		update.CallbackQuery.Message.MessageID = int64(callback.Message.ID) // ← это пойдет в MessageId
+		update.CallbackQuery.Message = domain.Message{
+			MessageID: int64(callback.Message.ID),
+		}
+
 		if callback.Message.Chat != nil {
-			update.CallbackQuery.Message.Chat.ID = callback.Message.Chat.ID // ← это пойдет в ChatId
+			update.CallbackQuery.Message.Chat = domain.Chat{
+				ID: callback.Message.Chat.ID,
+			}
 		}
 	}
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"server/internal/biz_server/grpcclient"
 	"server/internal/biz_server/repository"
@@ -119,7 +120,7 @@ func (s *BizService) CreateWelcomeReplyKeyboard() *domain.ReplyMarkup {
 		InlineKeyboard: [][]domain.InlineButton{
 			// Первый ряд
 			{
-				{Text: "Посмотреть",
+				{Text: "Поисковик",
 					URL: "https://www.google.com/"},
 			},
 		},
@@ -155,9 +156,16 @@ func (s *BizService) AnswerIncomingMsg(ctx context.Context, req *domain.Incoming
 // метод для регистрации или обновления текущего пользователя
 func (s *BizService) RegisterOrUpdate(ctx context.Context, telegramID int64, firstName, lastName, username string) (*domain.User, error) {
 	// Проверяем, существует ли пользователь
+
 	user, err := s.repo.GetUserByTelegramID(ctx, telegramID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check user existence: %w", err)
+		// Если пользователь не найден - это нормально, просто создадим нового
+		if errors.Is(err, repository.ErrUserNotFound) {
+			user = nil
+		} else {
+			// Другая ошибка (проблемы с БД и т.д.)
+			return nil, fmt.Errorf("failed to check user existence: %w", err)
+		}
 	}
 
 	now := time.Now()

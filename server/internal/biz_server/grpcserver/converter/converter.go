@@ -3,6 +3,7 @@ package converter
 
 import (
 	pb "global_models/grpc/bot"
+	"log"
 	"server/internal/domain"
 
 	"time"
@@ -64,14 +65,33 @@ func ToProtoResponse(resp *domain.MessageResponse) *pb.SendMessageResponse {
 //
 // Поле ID оставляем пустым - его потом база данных сама присвоит
 func ToCallbackLog(callback *pb.CallbackQuery) *domain.CallbackLog {
+	defer func() {
+		if recover() != nil {
+			log.Println("Panic")
+		}
+	}()
+
+	// Защита от nil полей
+	var userNickName, userFirstName, userLastName string
+
+	if callback.From != nil {
+		userNickName = callback.From.Username
+		userFirstName = callback.From.FirstName
+		userLastName = callback.From.LastName
+	} else {
+		log.Printf("⚠️ Warning: callback.From is nil for callback ID: %s", callback.Id)
+		// Можно попробовать получить данные из других полей, если они есть
+		// Или оставить пустыми строками
+	}
+
 	return &domain.CallbackLog{
 		CallbackID:    callback.Id,
-		UserID:        callback.UserId,         // прямое поле, не callback.From.ID
-		UserNickName:  callback.From.Username,  // Ник пользователя
-		UserFirstName: callback.From.FirstName, // Имя пользователя
-		UserLastName:  callback.From.LastName,  // Фамилия протзователя
-		MessageID:     callback.MessageId,      // прямое поле, не callback.Message.ID
-		ChatID:        callback.ChatId,         // прямое поле, не callback.Message.Chat.ID
+		UserID:        callback.UserId,    // прямое поле, не callback.From.ID
+		UserNickName:  userNickName,       // Ник пользователя
+		UserFirstName: userFirstName,      // Имя пользователя
+		UserLastName:  userLastName,       // Фамилия протзователя
+		MessageID:     callback.MessageId, // прямое поле, не callback.Message.ID
+		ChatID:        callback.ChatId,    // прямое поле, не callback.Message.Chat.ID
 		Data:          callback.Data,
 		Timestamp:     time.Now(),
 	}

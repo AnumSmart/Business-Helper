@@ -72,8 +72,8 @@ func (h *BotHttpHandler) HandleBotStart(c tele.Context) error {
 	btns := []tele.InlineButton{
 		{Text: "Помощь",
 			Data: "help"},
-		{Text: "Поисковик",
-			Data: "search"},
+		{Text: "Ознакомиться",
+			Data: "lookup"},
 	}
 
 	// Создаем клавиатуру с кнопкой
@@ -84,7 +84,7 @@ func (h *BotHttpHandler) HandleBotStart(c tele.Context) error {
 	}
 
 	// Отправляем сообщение с клавиатурой
-	return c.Send("Добро пожаловать! Я бот, интегрированный с вашим HTTP сервером. Пожалуйста, выберите одну из функций", markup)
+	return c.Send("Добро пожаловать! Я бот-ассистент. Вы можете ознакомится с примерами работ. Пожалуйста, выберите одну из функций", markup)
 }
 
 // хэндлер для обработки всех текстовых сообщений от телеграмм бота в polling режиме

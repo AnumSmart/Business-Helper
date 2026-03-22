@@ -89,6 +89,11 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 
 // ProcessCallback - обработка callback от inline клавиатуры
 func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.CallbackQuery) (*pb.UpdateResponse, error) {
+	// Проверяем, что callback не nil и содержит необходимые данные
+	if callback == nil {
+		return nil, fmt.Errorf("callback is nil")
+	}
+
 	// Добавим подробное логирование для отладки
 	log.Printf("🔍 ProcessCallback получил: ID=%s, UserID=%d, ChatID=%d, MessageID=%d, Data=%s",
 		callback.Id, callback.UserId, callback.ChatId, callback.MessageId, callback.Data)
@@ -96,11 +101,17 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 	// Приводим входящий callback к domain типу, используем конвертер
 	callBackLog := converter.ToCallbackLog(callback)
 
+	log.Println(callBackLog.MessageID)
+
 	// при вызове этого метода необходимо сохранить нового пользователя в базе или обновить некоторые его поля
 	user, err := b.Service.RegisterOrUpdate(ctx, callBackLog.MessageID, callBackLog.UserFirstName, callBackLog.UserLastName, callBackLog.UserNickName)
 	if err != nil {
 		log.Printf("failed to save/update user: %v", err)
 	}
+
+	fmt.Println("-----------------------------------------")
+	fmt.Println(user)
+	fmt.Println("-----------------------------------------")
 
 	// логируем, что пользователь нажал на кнопку
 	log.Printf("Пользователь %s нажал на кнопку, началась обработка колбэка %v \n", user.Username, callBackLog.ID)
@@ -124,10 +135,10 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 			Text:   "Я бот-помощник. Доступные команды:\n/help - помощь\n",
 		})
 
-	case "search":
+	case "lookup":
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
-			Text:   "Вот ссылка на поисковую систему:\nhttps://www.google.com\n",
+			Text:   "Вот ссылка на инстграмм аккаунт мастера:\nhttps://www.google.com\n",
 		})
 
 	default:
