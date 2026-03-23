@@ -109,10 +109,6 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		log.Printf("failed to save/update user: %v", err)
 	}
 
-	fmt.Println("-----------------------------------------")
-	fmt.Println(user)
-	fmt.Println("-----------------------------------------")
-
 	// логируем, что пользователь нажал на кнопку
 	log.Printf("Пользователь %s нажал на кнопку, началась обработка колбэка %v \n", user.Username, callBackLog.ID)
 
@@ -139,6 +135,31 @@ func (b *BizGRPCHandler) ProcessCallback(ctx context.Context, callback *pb.Callb
 		response.Messages = append(response.Messages, &pb.OutgoingMessage{
 			ChatId: callback.ChatId,
 			Text:   "Вот ссылка на инстграмм аккаунт мастера:\nhttps://www.google.com\n",
+		})
+
+	case "menu":
+		// Создаем кнопки для inline-клавиатуры
+		// InlineKeyboard - это [][]InlineButton (срез рядов, в каждом ряду - срез кнопок)
+		btns := [][]domain.InlineButton{
+			{
+				{Text: "Помощь", CallbackData: "help"},
+				{Text: "Ознакомиться", CallbackData: "lookup"},
+			},
+			// Можно добавить второй ряд кнопок:
+			// {
+			//     {Text: "Настройки", CallbackData: "settings"},
+			// },
+		}
+
+		// Создаем клавиатуру с inline-кнопками
+		replyMarkup := &domain.ReplyMarkup{
+			InlineKeyboard: btns,
+		}
+
+		response.Messages = append(response.Messages, &pb.OutgoingMessage{
+			ChatId:      callback.ChatId,
+			Text:        "Главное меню",
+			ReplyMarkup: converter.ToProtoReplyMarkup(replyMarkup), // НЕ ЗАБЫВАЕМ КОНВЕРТИРОВАТЬ!
 		})
 
 	default:

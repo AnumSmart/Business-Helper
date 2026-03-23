@@ -7,6 +7,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,23 +69,102 @@ func (h *BotHttpHandler) HandleWebhook(c *gin.Context) {
 
 // хэндлер для обработки команды /start от телеграмм бота в polling режиме
 func (h *BotHttpHandler) HandleBotStart(c tele.Context) error {
-	// Создаем inline-кнопку напрямую
-	btns := []tele.InlineButton{
-		{Text: "Помощь",
-			Data: "help"},
-		{Text: "Ознакомиться",
-			Data: "lookup"},
+	args := strings.Fields(c.Text())
+
+	var welcomeMsg string
+	var inlineBtns *tele.ReplyMarkup
+	var replyMarkup *tele.ReplyMarkup
+
+	// Проверяем наличие параметра
+	if len(args) > 1 {
+		param := args[1]
+
+		// Обрабатываем разные параметры
+		switch param {
+		case "menu":
+			welcomeMsg = "🏠 Главное меню\n\nДобро пожаловать! Я бот-ассистент. Выберите действие:"
+			inlineBtns = &tele.ReplyMarkup{
+				InlineKeyboard: [][]tele.InlineButton{
+					{
+						{Text: "❓ Помощь", Data: "help"},
+						{Text: "📚 Ознакомиться", Data: "lookup"},
+					},
+					{
+						{Text: "⚙️ Настройки", Data: "settings"},
+					},
+				},
+			}
+
+		case "help":
+			welcomeMsg = "🆘 Справка\n\nЯ могу помочь вам:\n• Ознакомиться с примерами работ\n• Ответить на вопросы\n• Настроить уведомления\n\nВыберите действие:"
+			inlineBtns = &tele.ReplyMarkup{
+				InlineKeyboard: [][]tele.InlineButton{
+					{
+						{Text: "📚 Примеры работ", Data: "lookup"},
+						{Text: "⚙️ Настройки", Data: "settings"},
+					},
+					{
+						{Text: "🏠 Главное меню", Data: "menu"},
+					},
+				},
+			}
+
+		case "referral":
+			welcomeMsg = "🎉 Добро пожаловать по реферальной ссылке!\n\nВам начислен бонус! Ознакомьтесь с нашими возможностями:"
+			inlineBtns = &tele.ReplyMarkup{
+				InlineKeyboard: [][]tele.InlineButton{
+					{
+						{Text: "📚 Начать", Data: "lookup"},
+						{Text: "❓ Помощь", Data: "help"},
+					},
+				},
+			}
+			// Здесь можно сохранить информацию о реферале
+			// h.saveReferral(c.Chat().ID, args[2] если есть)
+
+		default:
+			// Неизвестный параметр - показываем стандартное приветствие
+			welcomeMsg = "Добро пожаловать! Я бот-ассистент. Вы можете ознакомиться с примерами работ. Пожалуйста, выберите одну из функций"
+			inlineBtns = &tele.ReplyMarkup{
+				InlineKeyboard: [][]tele.InlineButton{
+					{
+						{Text: "❓ Помощь", Data: "help"},
+						{Text: "📚 Ознакомиться", Data: "lookup"},
+					},
+				},
+			}
+		}
+	} else {
+		// Нет параметра - обычный запуск
+		welcomeMsg = "Добро пожаловать! Я бот-ассистент. Вы можете ознакомиться с примерами работ. Пожалуйста, выберите одну из функций"
+		inlineBtns = &tele.ReplyMarkup{
+			InlineKeyboard: [][]tele.InlineButton{
+				{
+					{Text: "❓ Помощь", Data: "help"},
+					{Text: "📚 Ознакомиться", Data: "lookup"},
+				},
+			},
+		}
 	}
 
-	// Создаем клавиатуру с кнопкой
-	markup := &tele.ReplyMarkup{
-		InlineKeyboard: [][]tele.InlineButton{
-			btns,
-		},
+	// Отправляем сообщение с inline кнопками
+	err := c.Send(welcomeMsg, inlineBtns)
+	if err != nil {
+		return err
 	}
 
-	// Отправляем сообщение с клавиатурой
-	return c.Send("Добро пожаловать! Я бот-ассистент. Вы можете ознакомится с примерами работ. Пожалуйста, выберите одну из функций", markup)
+	// Reply клавиатура (внизу экрана) - общая для всех случаев
+	replyMarkup = &tele.ReplyMarkup{
+		ResizeKeyboard: true,
+	}
+
+	replyMarkup.Reply(
+		replyMarkup.Row(
+			replyMarkup.Text("🏠 Главное меню"),
+		),
+	)
+
+	return c.Send("Используйте кнопки ниже для быстрого доступа:", replyMarkup)
 }
 
 // хэндлер для обработки всех текстовых сообщений от телеграмм бота в polling режиме
