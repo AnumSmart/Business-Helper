@@ -53,7 +53,7 @@ func NewBizService(repo *repository.BizRepository, grpcClient *grpcclient.BotGrp
 	}, nil
 }
 
-// метод сервисного слоя для тестирования
+// метод сервисного слоя для тестирования (раздел HTTP сервера)
 func (s *BizService) GetEcho() string {
 	return fmt.Sprintf("%s ---> Service layer", s.repo.Echo())
 }
@@ -122,6 +122,8 @@ func (s *BizService) CreateWelcomeReplyKeyboard() *domain.ReplyMarkup {
 			{
 				{Text: "Поисковик",
 					URL: "https://www.google.com/"},
+				{Text: "🏠 Главное меню",
+					CallbackData: "menu"},
 			},
 		},
 		ResizeKeyboard:  true, // Подогнать размер под кнопки
