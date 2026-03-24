@@ -68,8 +68,10 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 		//return nil, fmt.Errorf("failed to save outgoing message: %w", err)
 	}
 
+	replyMarkUp := b.Service.CreateTextRespKeyBoard(incomingMsg.Text)
+
 	// в ответе пеперадём юзеру тестовую кливиатуру (через grpc на сервер бота)
-	replyMakrUp := converter.ToProtoReplyMarkup(b.Service.CreateWelcomeReplyKeyboard())
+	respMakrUp := converter.ToProtoReplyMarkup(replyMarkUp)
 
 	// Формируем ответ для бота
 
@@ -79,7 +81,7 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 			{
 				ChatId:      msg.ChatId,
 				Text:        replyText,
-				ReplyMarkup: replyMakrUp,
+				ReplyMarkup: respMakrUp,
 			},
 		},
 	}
