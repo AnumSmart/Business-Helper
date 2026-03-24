@@ -28,6 +28,7 @@ type ServiceForGRPCHandler interface {
 	// RegisterOrUpdate - регистрирует нового или обновляет существующего пользователя
 	// Вызывается при каждом обращении к боту
 	RegisterOrUpdate(ctx context.Context, telegramID int64, firstName, lastName, username string) (*domain.User, error)
+	CreateTextRespKeyBoard(text string) *domain.ReplyMarkup
 }
 
 // описание структуры сервисного слоя
@@ -78,20 +79,25 @@ func (s *BizService) GenerateReply(text string, user *domain.User) string {
 	// Простая логика для примера
 	// В реальном проекте здесь может быть AI, бизнес-правила и т.д.
 
-	if text == "/start" {
-		return "Добро пожаловать! Я бот-помощник. Если вы хотите посмотреть работы по организации дизайна - нажмите кнопку 'Посмотреть'"
+	if text == "🏠 Главное меню" {
+		return "Вы вернулись в главное меню. Пожалуйста, выберите действие:"
 	}
 
-	if text == "/help" {
+	if text == "❓ Помощь" {
 		return "Этот бот создан, чтобы облегчить вам жизнь"
 	}
 
-	// Приветствие с именем пользователя
-	if user != nil && user.FirstName != "" {
-		return fmt.Sprintf("Привет, %s! Вы написали: %s", user.FirstName, text)
+	return fmt.Sprintf("Пришло непредвиденное сообщение: %s", text)
+}
+
+// метод для создания клавиатуры в зависимости от текста сообщения
+func (s *BizService) CreateTextRespKeyBoard(text string) *domain.ReplyMarkup {
+	switch text {
+	case "🏠 Главное меню":
+		return s.getMainMenuKeyboard()
 	}
 
-	return fmt.Sprintf("Эхо: %s", text)
+	return s.getMainMenuKeyboard()
 }
 
 // CreateTestReplyKeyboard создает тестовую обычную клавиатуру
@@ -120,10 +126,10 @@ func (s *BizService) CreateWelcomeReplyKeyboard() *domain.ReplyMarkup {
 		InlineKeyboard: [][]domain.InlineButton{
 			// Первый ряд
 			{
-				{Text: "Поисковик",
-					URL: "https://www.google.com/"},
-				{Text: "🏠 Главное меню",
-					CallbackData: "menu"},
+				{
+					Text: "Поисковик",
+					URL:  "https://www.google.com/",
+				},
 			},
 		},
 		ResizeKeyboard:  true, // Подогнать размер под кнопки
