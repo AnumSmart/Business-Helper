@@ -15,7 +15,9 @@ import (
 	handlersgrpc "server/internal/biz_server/grpcserver/handlers_grpc"
 	"server/internal/biz_server/httpserver/handlers"
 	"server/internal/biz_server/repository"
-	"server/internal/biz_server/service"
+	servicegrpc "server/internal/biz_server/service_grpc"
+	servicehttp "server/internal/biz_server/service_http"
+
 	"server/internal/interfaces"
 	"sync"
 )
@@ -77,20 +79,20 @@ func InitDependencies(ctx context.Context) (*BizServiceDepenencies, error) {
 		return nil, fmt.Errorf("failed to create grpc client: %w", err)
 	}
 
-	// создаём сервисный слой
-	service, err := service.NewBizService(repo, grpcClient)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Service Layer: %w", err)
-	}
+	// создаём сервисный слой для grpc
+	serviceGRPC := servicegrpc.NewBizServiceFacade(repo, grpcClient)
+
+	// создаём сервисный слой для http
+	serviceHTTP := servicehttp.NewBizServiceFacade()
 
 	// создаём слой хэндлера для HTTP
-	bizHTTPHandler := handlers.NewBizHandler(service)
+	bizHTTPHandler := handlers.NewBizHandler(serviceHTTP)
 	if bizHTTPHandler == nil {
 		return nil, fmt.Errorf("failed to create bizness http handler")
 	}
 
 	// создаём слой хэндлера для GRPC
-	bizGRPCHandler := handlersgrpc.NewBizGRPCHandler(service)
+	bizGRPCHandler := handlersgrpc.NewBizGRPCHandler(serviceGRPC)
 	if bizGRPCHandler == nil {
 		return nil, fmt.Errorf("failed to create bizness grpc handler")
 	}

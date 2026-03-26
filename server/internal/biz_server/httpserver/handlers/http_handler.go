@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"global_models/interf"
 	"net/http"
-	"server/internal/biz_server/service"
+	servicehttp "server/internal/biz_server/service_http"
 
 	"github.com/gin-gonic/gin"
 )
 
 // структура хэндлера http сервера основной логики
 type BizHTTPHandler struct {
-	Service service.ServiceForHTTPHandler
+	Service *servicehttp.BizServiceFacade
 }
 
 // конструктор для слоя хэндлеров
-func NewBizHandler(service service.ServiceForHTTPHandler) interf.BizHTTPHandlerInterface {
+func NewBizHandler(service *servicehttp.BizServiceFacade) interf.BizHTTPHandlerInterface {
 	return &BizHTTPHandler{
 		Service: service,
 	}
