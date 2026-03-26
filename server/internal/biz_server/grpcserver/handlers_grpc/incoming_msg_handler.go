@@ -16,7 +16,7 @@ func (b *BizGRPCHandler) ProcessIncomingMsg(ctx context.Context, req *pb.SendMes
 
 	// 2. Конвертация и вызов сервиса
 	incomingMsg := converter.ToIncomingMessage(req)
-	result, err := b.Service.AnswerIncomingMsg(ctx, incomingMsg)
+	result, err := b.Service.Messages.ProcessIncomingMessage(ctx, incomingMsg)
 	if err != nil {
 		return nil, fmt.Errorf("service error: %w", err)
 	}

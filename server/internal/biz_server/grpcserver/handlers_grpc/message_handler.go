@@ -36,8 +36,8 @@ func (b *BizGRPCHandler) ProcessMessage(ctx context.Context, msg *pb.Message) (*
 	}
 
 	// 4. Генерация ответа
-	replyText := b.Service.GenerateReply(msg.Text, msgCtx.user)
-	replyMarkup := b.Service.CreateTextRespKeyBoard(msg.Text)
+	replyText := b.Service.Responses.GenerateReply(msg.Text, msgCtx.user)
+	replyMarkup := b.Service.Responses.CreateTextRespKeyBoard(msg.Text)
 
 	// 5. Сохранение исходящего сообщения
 	b.saveOutgoingMessage(msgCtx.ctx, msgCtx.chatID, msgCtx.userID, replyText)
@@ -69,7 +69,7 @@ func (b *BizGRPCHandler) logIncomingMessage(msg *pb.Message) {
 // метод для сохранения/обновления пользователя и его сообщения
 func (b *BizGRPCHandler) saveUserAndMessage(msgCtx *messageContext) error {
 	// Сохраняем/обновляем пользователя
-	_, err := b.Service.RegisterOrUpdate(msgCtx.ctx,
+	_, err := b.Service.Users.RegisterOrUpdate(msgCtx.ctx,
 		msgCtx.msg.MessageID,
 		msgCtx.msg.UserFirstName,
 		msgCtx.msg.UserLastName,
@@ -79,7 +79,7 @@ func (b *BizGRPCHandler) saveUserAndMessage(msgCtx *messageContext) error {
 	}
 
 	// Сохраняем сообщение
-	if err := b.Service.CheckAndSaveMsg(msgCtx.ctx, msgCtx.msg); err != nil {
+	if err := b.Service.Messages.CheckAndSaveMsg(msgCtx.ctx, msgCtx.msg); err != nil {
 		return fmt.Errorf("failed to save message: %w", err)
 	}
 
@@ -96,7 +96,7 @@ func (b *BizGRPCHandler) saveOutgoingMessage(ctx context.Context, chatID, userID
 		TimeStamp: time.Now(),
 	}
 
-	if err := b.Service.CheckAndSaveMsg(ctx, outgoingMsg); err != nil {
+	if err := b.Service.Messages.CheckAndSaveMsg(ctx, outgoingMsg); err != nil {
 		fmt.Printf("⚠️ Failed to save outgoing message: %v", err)
 	}
 }

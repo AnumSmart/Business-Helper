@@ -56,7 +56,7 @@ func (b *BizGRPCHandler) buildCallbackContext(ctx context.Context, callback *pb.
 	callbackLog := converter.ToCallbackLog(callback)
 
 	// сохраняем/обновляем пользователя
-	user, err := b.Service.RegisterOrUpdate(ctx,
+	user, err := b.Service.Users.RegisterOrUpdate(ctx,
 		callbackLog.MessageID,
 		callbackLog.UserFirstName,
 		callbackLog.UserLastName,
@@ -80,7 +80,7 @@ func (b *BizGRPCHandler) buildCallbackContext(ctx context.Context, callback *pb.
 func (b *BizGRPCHandler) saveCallback(cbCtx *callbackContext) {
 
 	// Сохраняем callback в БД
-	if err := b.Service.CheckAndSaveCallBack(cbCtx.ctx, cbCtx.callback); err != nil {
+	if err := b.Service.Messages.CheckAndSaveCallBack(cbCtx.ctx, cbCtx.callback); err != nil {
 		fmt.Printf("⚠️ Failed to save callback: %v", err)
 	}
 }
